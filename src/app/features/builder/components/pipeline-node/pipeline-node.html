@@ -84,6 +84,10 @@
     }
   </div>
 
+  <div class="pn-actions">
+    <button class="btn btn-outline btn-sm" (click)="onEdit(); $event.stopPropagation()">Edit</button>
+  </div>
+
   <!-- Branch children (read-only list) -->
   @if (isBranch() && branchChildren().length && !suppressChildren()) {
     <div class="subtasks-block">
@@ -96,6 +100,12 @@
           <div class="subtask-row" [attr.data-task-id]="child.id">
             <span class="st-type">{{ subTaskIcon(child.type) }} {{ child.type }}</span>
             <span class="st-meta">{{ child.name || child.type }}</span>
+            <div class="st-actions">
+              <button
+                class="btn btn-outline btn-sm"
+                style="padding:3px 8px;font-size:10px"
+                (click)="onEditBranchChild($event, child.id)">Edit</button>
+            </div>
           </div>
         }
       </div>
@@ -114,6 +124,12 @@
           <div class="subtask-row" [attr.data-task-id]="sub.id">
             <span class="st-type">{{ sub.type }}</span>
             <span class="st-meta">{{ subTaskMeta(sub) }}</span>
+            <div class="st-actions">
+              <button
+                class="btn btn-outline btn-sm"
+                style="padding:3px 8px;font-size:10px"
+                (click)="onEditSubTask($event, sub.id)">Edit</button>
+            </div>
           </div>
         }
       </div>

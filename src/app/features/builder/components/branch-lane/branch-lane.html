@@ -10,22 +10,31 @@
       title="Remove this lane (coming in a later segment)">✕</button>
   </div>
 
-  <ei-pipeline-node [task]="branch()" [suppressChildren]="true" />
+  <ei-pipeline-node [task]="branch()" [suppressChildren]="true" [jobId]="jobId()" />
 
   @for (child of children(); track child.id; let i = $index) {
     <div
       class="lane-child-drop"
       [class.drop-active]="childTargetsVisible()"
       [attr.data-child-slot]="idx() + ':' + i"
-      [attr.data-lane-branch-idx]="idx()"></div>
+      [attr.data-lane-branch-idx]="idx()"
+      (dragover)="onSlotDragOver($event)"
+      (drop)="onSlotDrop($event, i)"></div>
 
-    <ei-pipeline-node [task]="child" />
+    <ei-pipeline-node
+  [task]="child"
+  dragKind="child"
+  [dragTopIdx]="idx()"
+  [dragChildIdx]="i"
+  [jobId]="jobId()" />
   }
 
   <div
     class="lane-child-drop"
     [class.drop-active]="childTargetsVisible()"
     [attr.data-child-slot]="idx() + ':' + childrenCount()"
-    [attr.data-lane-branch-idx]="idx()"></div>
+    [attr.data-lane-branch-idx]="idx()"
+    (dragover)="onSlotDragOver($event)"
+    (drop)="onSlotDrop($event, childrenCount())"></div>
 
 </div>

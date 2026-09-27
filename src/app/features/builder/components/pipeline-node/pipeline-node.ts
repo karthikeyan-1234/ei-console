@@ -16,6 +16,8 @@ import { DragKind, DragStateService } from '../../../../shared/services/drag-sta
 import { JsonFlowService } from '../../../../core/services/json-flow.service';
 import { JsonOverlayService } from '../../../../shared/services/json-overlay.service';
 
+import { TaskEditorService } from '../../services/task-editor.service';
+
 @Component({
   selector: 'ei-pipeline-node',
   imports: [],
@@ -30,12 +32,16 @@ private readonly jsonOverlay = inject(JsonOverlayService);
 
   readonly task = input.required<PipelineTask>();
 
+  private readonly taskEditor = inject(TaskEditorService);
+
   /**
  * When true, the branch's own children list is not rendered inside the card.
  * Used by the fork-lane layout, where children are rendered as siblings of
  * the branch card rather than as a sub-block inside it.
  */
   readonly suppressChildren = input<boolean>(false);
+
+  readonly jobId = input.required<number>();
 
 
   /**
@@ -284,5 +290,25 @@ onHoverEnd(event: MouseEvent): void {
   if (related instanceof HTMLElement && related.closest('.json-overlay')) return;
 
   this.jsonOverlay.hide();
+}
+
+onEdit(): void {
+  this.taskEditor.openForTask(this.jobId(), this.task());
+}
+
+onEditSubTask(event: MouseEvent, subTaskId: string): void {
+  event.stopPropagation();
+  const t = this.task();
+  if (t.type !== 'Transform') return;
+  const sub = (t.subtasks ?? []).find(s => s.id === subTaskId);
+  if (sub) this.taskEditor.openForTask(this.jobId(), sub);
+}
+
+onEditBranchChild(event: MouseEvent, childId: string): void {
+  event.stopPropagation();
+  const t = this.task();
+  if (t.type !== 'Branch') return;
+  const child = (t.children ?? []).find(c => c.id === childId);
+  if (child) this.taskEditor.openForTask(this.jobId(), child);
 }
 }

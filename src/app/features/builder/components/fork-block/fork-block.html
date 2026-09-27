@@ -6,11 +6,11 @@
 
   <div class="branch-header">
     <span
-  class="fork-drag-handle"
-  draggable="true"
-  title="Drag to move the whole fork"
-  (dragstart)="onDragStart($event)"
-  (dragend)="onDragEnd()">⠿</span>
+      class="fork-drag-handle"
+      draggable="true"
+      title="Drag to move the whole fork"
+      (dragstart)="onDragStart($event)"
+      (dragend)="onDragEnd()">⠿</span>
     <span class="bh-icon">⑂</span>
     <span>PARALLEL FORK</span>
     <span class="bh-count">{{ laneCountLabel() }}</span>
@@ -26,7 +26,11 @@
 
   <div class="lanes" [style.grid-template-columns]="lanesGridStyle()">
     @for (b of branches(); track b.idx) {
-      <ei-branch-lane [branch]="b.branch" [idx]="b.idx" />
+      <ei-branch-lane
+        [branch]="b.branch"
+        [idx]="b.idx"
+        [jobId]="jobId()"
+        (childDropped)="onLaneChildDropped($event)" />
     }
   </div>
 </div>

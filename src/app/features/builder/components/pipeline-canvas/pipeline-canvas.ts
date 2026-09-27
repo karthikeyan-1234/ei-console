@@ -17,6 +17,7 @@ import { DragStateService } from '../../../../shared/services/drag-state.service
 import { JsonOverlayService } from '../../../../shared/services/json-overlay.service';
 import { PipelineNodeComponent } from '../pipeline-node/pipeline-node';
 import { ForkBlockComponent } from '../fork-block/fork-block';
+import { ChildDropEvent } from '../branch-lane/branch-lane';
 
 @Component({
   selector: 'ei-pipeline-canvas',
@@ -177,4 +178,62 @@ export class PipelineCanvasComponent {
     void this.jobs.update(job.id, { pipeline });
     this.toasts.success('Fork moved');
   }
+
+  onChildDrop(event: ChildDropEvent): void {
+  const srcBranchIdx = this.dragState.sourceTopIdx();
+  const srcChildIdx = this.dragState.sourceChildIdx();
+  if (srcBranchIdx === null || srcChildIdx === null) return;
+
+  this.applyChildMove(
+    srcBranchIdx,
+    srcChildIdx,
+    event.targetBranchIdx,
+    event.targetChildIdx,
+  );
+}
+
+private applyChildMove(
+  srcBranchIdx: number,
+  srcChildIdx: number,
+  tgtBranchIdx: number,
+  tgtChildIdx: number,
+): void {
+  const job = this.job();
+  const pipeline = [...job.pipeline];
+
+  const srcBranch = pipeline[srcBranchIdx];
+  if (!srcBranch || srcBranch.type !== 'Branch') return;
+
+  if (srcBranchIdx === tgtBranchIdx) {
+    // Same-lane reorder.
+    const children = [...(srcBranch.children ?? [])];
+    let adjustedTarget = tgtChildIdx;
+    if (srcChildIdx < adjustedTarget) adjustedTarget -= 1;
+    if (srcChildIdx === adjustedTarget) return;
+
+    const moved = children.splice(srcChildIdx, 1)[0];
+    children.splice(adjustedTarget, 0, moved);
+
+    pipeline[srcBranchIdx] = { ...srcBranch, children };
+  } else {
+    // Cross-lane move.
+    const tgtBranch = pipeline[tgtBranchIdx];
+    if (!tgtBranch || tgtBranch.type !== 'Branch') return;
+
+    const srcChildren = [...(srcBranch.children ?? [])];
+    const tgtChildren = [...(tgtBranch.children ?? [])];
+
+    const moved = srcChildren.splice(srcChildIdx, 1)[0];
+    const insertAt = Math.min(tgtChildIdx, tgtChildren.length);
+    tgtChildren.splice(insertAt, 0, moved);
+
+    pipeline[srcBranchIdx] = { ...srcBranch, children: srcChildren };
+    pipeline[tgtBranchIdx] = { ...tgtBranch, children: tgtChildren };
+  }
+
+  void this.jobs.update(job.id, { pipeline });
+  this.toasts.success(
+    srcBranchIdx === tgtBranchIdx ? 'Child reordered' : 'Child moved to lane',
+  );
+}
 }

@@ -15,13 +15,17 @@
         <ei-pipeline-node
           [task]="block.task"
           dragKind="top"
-          [dragTopIdx]="block.startIdx" />
+          [dragTopIdx]="block.startIdx"
+          [jobId]="job().id" />
       } @else if (block.type === 'fork') {
-        <ei-fork-block [block]="block" />
+        <ei-fork-block
+          [block]="block"
+          [jobId]="job().id"
+          (childDropped)="onChildDrop($event)" />
       }
 
       @if (!isLast) {
-        <div class="pipeline-arrow">→</div>
+        <div class="pipeline-arrow"></div>
       }
     }
 

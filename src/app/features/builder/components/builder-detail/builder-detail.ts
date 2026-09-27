@@ -4,14 +4,18 @@ import { JobService } from '../../../../core/services/job.service';
 import { TenantService } from '../../../../core/services/tenant.service';
 import { PipelineCanvasComponent } from '../pipeline-canvas/pipeline-canvas';
 
+import { TaskEditorComponent } from '../../dialogs/task-editor/task-editor';
+
 @Component({
   selector: 'ei-builder-detail',
-  imports: [PipelineCanvasComponent],
+  imports: [PipelineCanvasComponent, TaskEditorComponent],
   templateUrl: './builder-detail.html',
 })
 export class BuilderDetailComponent {
   private readonly jobs = inject(JobService);
   private readonly tenants = inject(TenantService);
+
+  
 
   readonly jobId = input<number | null>(null);
 

@@ -1,0 +1,61 @@
+<div class="callout">
+  <b>API Push</b> — sends data to a provider. The request body is evaluated as JSONata per item.
+</div>
+
+<div class="form-grid">
+  <div class="form-group">
+    <label>Connection</label>
+    <select (change)="onConnectionChange($any($event.target).value)">
+      <option value="" [selected]="!task().connectionId">— Select —</option>
+      @for (c of connectionOptions(); track c.id) {
+        <option [value]="c.id" [selected]="c.id === task().connectionId">{{ c.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Auth Profile</label>
+    <select (change)="onAuthChange($any($event.target).value)">
+      <option value="" [selected]="!task().authId">— Connection default —</option>
+      @for (a of authOptions(); track a.id) {
+        <option [value]="a.id" [selected]="a.id === task().authId">{{ a.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group full">
+    <label>Endpoint URL / Path</label>
+    <input
+      type="text"
+      style="font-family:var(--mono)"
+      [value]="task().url || ''"
+      (input)="onUrlChange($any($event.target).value)" />
+  </div>
+
+  <div class="form-group">
+    <label>HTTP Method</label>
+    <select (change)="onMethodChange($any($event.target).value)">
+      @for (m of methods; track m) {
+        <option [value]="m" [selected]="m === (task().method || 'POST')">{{ m }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Timeout (s)</label>
+    <input
+      type="number"
+      [value]="task().timeout || 30"
+      (input)="onTimeoutChange($any($event.target).value)" />
+  </div>
+
+  <div class="form-group full">
+    <label>Request Body (JSONata)</label>
+    <textarea
+      class="editor-pane"
+      rows="4"
+      style="margin-top:4px"
+      [value]="bodyValue()"
+      (input)="onBodyChange($any($event.target).value)"></textarea>
+  </div>
+</div>

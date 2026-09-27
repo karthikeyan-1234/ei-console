@@ -46,6 +46,10 @@
   font-size:20px;padding:32px 8px 0;flex-shrink:0;
   transition:.15s;position:relative;
 }
+.pipeline-arrow::before{
+  content:'\2192';  /* U+2192 RIGHTWARDS ARROW — pure ASCII escape */
+  line-height:1;
+}
 .pipeline-arrow.clickable{cursor:pointer;padding:32px 12px 0}
 .pipeline-arrow.clickable:hover{color:var(--blue);transform:scale(1.15)}
 .pipeline-arrow.selected{
@@ -63,7 +67,8 @@
 .pipeline-node.draggable{cursor:grab}
 .pipeline-node.draggable:active{cursor:grabbing}
 .pipeline-node.draggable .pn-head::before{
-  content:'⠿';position:absolute;top:10px;right:10px;
+  content:'\283F';
+  position:absolute;top:10px;right:10px;
   color:#cbd5e1;font-size:12px;line-height:1;
 }
 .pipeline-node.draggable:hover .pn-head::before{color:#94a3b8}
@@ -78,7 +83,8 @@
   background:linear-gradient(180deg,transparent,#3b82f6,transparent);width:20px;
 }
 .drop-slot.drop-active::after{
-  content:'↕';position:absolute;top:50%;left:50%;
+  content:'\2195';
+  position:absolute;top:50%;left:50%;
   transform:translate(-50%,-50%);color:#3b82f6;font-weight:900;font-size:16px;
 }
 
@@ -92,13 +98,26 @@
 }
 .branch-container.dragging{opacity:0.35}
 
-.branch-container{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.branch-container{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  flex-shrink:0;
+  flex-grow:0;
+  /* Four lanes at 260px + gaps + padding + borders ≈ 1120px.
+     Setting a generous min-width here gives the flex algorithm a definite
+     floor so the fork can't be squeezed. The actual width is set by the
+     grid-template-columns in the lanes div. */
+  min-width:max-content;
+}
 .branch-header{
   display:flex;align-items:center;gap:8px;
   padding:6px 10px;background:#ede9fe;
   border:1.5px solid #a78bfa;border-radius:8px;
   font-size:11px;color:#6d28d9;font-weight:800;
   text-transform:uppercase;letter-spacing:.05em;position:relative;
+  width:100%;
+  box-sizing:border-box;
 }
 .branch-header .bh-icon{font-size:12px}
 .branch-header .bh-count{
@@ -113,9 +132,16 @@
 .branch-header .bh-actions button:hover{background:#fff}
 
 .lanes{
-  display:grid;gap:8px;padding:8px;background:#faf5ff;
-  border:1.5px solid #c4b5fd;border-radius:10px;
-  border-top:none;border-top-left-radius:0;border-top-right-radius:0;
+  display:grid;
+  gap:8px;
+  padding:8px;
+  background:#faf5ff;
+  border:1.5px solid #c4b5fd;
+  border-radius:10px;
+  border-top:none;
+  border-top-left-radius:0;
+  border-top-right-radius:0;
+  width:max-content;
 }
 .lane{display:flex;flex-direction:column;gap:4px;min-width:0;position:relative}
 .lane-header{

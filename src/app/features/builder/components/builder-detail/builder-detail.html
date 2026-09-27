@@ -57,9 +57,11 @@
         Click <b>+ Add task</b> below, or <b>⑂ Add fork</b> to create a parallel fork.
       </div>
     } @else {
-      <ei-pipeline-canvas [job]="job()!" />
+      <ei-pipeline-canvas [job]="j" />
     }
   </div>
+
+  <ei-task-editor />
 } @else {
   <div class="builder-detail">
     <div class="bd-empty">

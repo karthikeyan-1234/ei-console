@@ -1,0 +1,42 @@
+@if (context(); as ctx) {
+  <ei-modal-shell
+    [title]="title()"
+    [subtitle]="subtitle()"
+    (closed)="onCancel()">
+
+    <div class="form-grid" style="margin-bottom:14px">
+      <div class="form-group">
+        <label>Task Type</label>
+        <select (change)="onTypeChange($any($event.target).value)">
+          @for (t of typeOptions(); track t) {
+            <option [value]="t" [selected]="t === type()">{{ typeLabel(t) }}</option>
+          }
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Task Name</label>
+        <input
+          type="text"
+          [value]="ctx.task.name || ''"
+          (input)="onNameChange($any($event.target).value)" />
+      </div>
+    </div>
+
+    @if (type() === 'ApiPull' && asApiPull(); as t) {
+      <ei-api-pull-fields [task]="t" />
+    } @else if (type() === 'ApiPush' && asApiPush(); as t) {
+      <ei-api-push-fields [task]="t" />
+    } @else if (type() === 'Transform') {
+      <ei-placeholder-fields [type]="'Transform'" />
+    } @else if (type() === 'Notify') {
+      <ei-placeholder-fields [type]="'Notify'" />
+    } @else if (type() === 'Branch') {
+      <ei-placeholder-fields [type]="'Branch'" />
+    } @else if (type() === 'JoinPoint') {
+      <ei-placeholder-fields [type]="'JoinPoint'" />
+    }
+
+    <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
+    <button modalFooter class="btn" (click)="onSave()">Save Task</button>
+  </ei-modal-shell>
+}
