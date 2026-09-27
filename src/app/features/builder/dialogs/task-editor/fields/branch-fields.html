@@ -1,0 +1,63 @@
+<div class="callout purple" style="background:#f5f3ff;border-color:#a78bfa">
+  <b>⑂ Branch</b> — a fork lane. Every child of this branch has the <b>same parent</b>:
+  the task that comes <b>before the parallel fork</b>. It does not chain from the
+  sibling that precedes it within the lane. The branch's condition decides whether
+  the lane runs; each child's own transform decides what subset of the shared
+  upstream context to use.
+</div>
+
+<div class="form-grid">
+
+  <div class="form-group full">
+    <label>Condition (JSONata)</label>
+    <input
+      type="text"
+      style="font-family:var(--mono)"
+      placeholder="$exists($.policies) and $count($.policies) > 0"
+      [value]="condition()"
+      (input)="onConditionChange($any($event.target).value)" />
+    <div class="hint">Evaluated at fork time. Leave empty to always run.</div>
+  </div>
+
+  <div class="form-group">
+    <label>Children execution mode</label>
+    <select (change)="onModeChange($any($event.target).value)">
+      @for (m of modes; track m.value) {
+        <option [value]="m.value" [selected]="m.value === executionMode()">
+          {{ m.label }}
+        </option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Children count</label>
+    <input type="text" [value]="childrenCount()" readonly />
+  </div>
+</div>
+
+<div class="children-editor">
+  <div class="ce-head">
+    <div class="ce-title">⑂ Children (edit in the pipeline, or drag between lanes)</div>
+  </div>
+
+  <div class="ce-lane">
+    <div class="ce-lane-body">
+      @for (child of children(); track child.id) {
+        <div class="ce-task-row">
+          <span class="ce-type">{{ iconFor(child) }} {{ child.type }}</span>
+          <span class="ce-name">{{ child.name || child.type }}</span>
+          <button
+            type="button"
+            class="btn btn-outline btn-xs"
+            (click)="onEditChild(child)">Edit</button>
+        </div>
+      } @empty {
+        <div class="ce-empty">
+          No children yet. Add children from the branch card's <b>+ Add child</b>
+          button on the pipeline.
+        </div>
+      }
+    </div>
+  </div>
+</div>

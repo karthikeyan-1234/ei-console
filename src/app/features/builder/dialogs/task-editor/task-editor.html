@@ -22,7 +22,7 @@
       </div>
     </div>
 
-    @if (type() === 'ApiPull' && asApiPull(); as t) {
+   @if (type() === 'ApiPull' && asApiPull(); as t) {
   <ei-api-pull-fields [task]="t" />
 } @else if (type() === 'ApiPush' && asApiPush(); as t) {
   <ei-api-push-fields [task]="t" />
@@ -30,10 +30,10 @@
   <ei-transform-fields [task]="t" />
 } @else if (type() === 'Notify' && asNotify(); as t) {
   <ei-notify-fields [task]="t" />
-} @else if (type() === 'Branch') {
-  <ei-placeholder-fields [type]="'Branch'" />
 } @else if (type() === 'JoinPoint' && asJoinPoint(); as t) {
   <ei-join-point-fields [task]="t" />
+} @else if (type() === 'Branch' && asBranch(); as t) {
+  <ei-branch-fields [task]="t" [jobId]="ctx.jobId" />
 }
 
     <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
