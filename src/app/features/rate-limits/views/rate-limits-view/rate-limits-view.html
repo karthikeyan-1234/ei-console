@@ -1,0 +1,59 @@
+<div class="cv-head">
+  <div>
+    <h3>Rate Limit Policies</h3>
+    <div class="sub">Bound to connections by FK.</div>
+  </div>
+  <div class="actions">
+    <button class="btn" (click)="openCreate()">+ New Policy</button>
+  </div>
+</div>
+
+<div class="ctable">
+  <div
+    class="ctable-row head"
+    style="grid-template-columns:2fr 1.4fr 1.2fr .8fr .8fr 1fr .9fr">
+    <div>CONNECTION (name)</div>
+    <div>CONNECTION (id FK)</div>
+    <div>SCOPE</div>
+    <div>RPS</div>
+    <div>BURST</div>
+    <div>MAX CONCURRENT</div>
+    <div></div>
+  </div>
+
+  @for (r of rows(); track r.id) {
+    <div
+      class="ctable-row"
+      style="grid-template-columns:2fr 1.4fr 1.2fr .8fr .8fr 1fr .9fr;cursor:default">
+
+      <div><b>{{ connectionName(r.connectionId) }}</b></div>
+
+      <div>
+        <code style="font-family:var(--mono);font-size:10px;background:#f1f5f9;padding:1px 5px;border-radius:3px">
+          {{ r.connectionId }}
+        </code>
+      </div>
+
+      <div>{{ r.scope }}</div>
+      <div>{{ r.rps }}</div>
+      <div>{{ r.burst }}</div>
+      <div>{{ r.concurrent }}</div>
+
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-outline btn-xs" (click)="openEdit(r.id)">Edit</button>
+        <button class="btn-ghost btn btn-xs" style="color:var(--red)" (click)="onDelete(r.id)">✕</button>
+      </div>
+    </div>
+  } @empty {
+    <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No rate limit policies.
+    </div>
+  }
+</div>
+
+@if (modalOpen()) {
+  <ei-rate-limit-modal
+    [rateLimit]="modalEditing()"
+    (saved)="onSave($event)"
+    (cancelled)="closeModal()" />
+}

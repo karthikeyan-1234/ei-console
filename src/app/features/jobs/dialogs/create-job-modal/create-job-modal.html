@@ -1,0 +1,84 @@
+<ei-modal-shell
+  title="Create Job"
+  subtitle="Register identity. Tasks are added in Job Builder."
+  [wide]="true"
+  (closed)="onCancel()">
+
+  <div class="callout">
+    <b>Slug uniqueness:</b> <code>(tenant_id, endpoint_slug)</code> must be unique — enforced before save.
+  </div>
+
+  @if (error()) {
+    <div class="callout danger" style="margin-top:0">{{ error() }}</div>
+  }
+
+  <div class="form-grid" style="margin-top:14px">
+    <div class="form-group">
+      <label>Job Name</label>
+      <input
+        type="text"
+        [value]="name()"
+        (input)="onNameInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group">
+      <label>Tenant Scope</label>
+<select (change)="onTenantInput($any($event.target).value)">
+  @for (t of activeTenants(); track t.id) {
+    <option [value]="t.id" [selected]="t.id === tenant()">{{ t.name }}</option>
+  }
+</select>
+    </div>
+
+    <div class="form-group full">
+      <label>Endpoint Slug</label>
+      <input
+        type="text"
+        style="font-family:var(--mono)"
+        [value]="slug()"
+        (input)="onSlugInput($any($event.target).value)" />
+      <div class="hint">
+        Full trigger URL: <code>POST https://ei.insureliv.com/api/ei/trigger/{{ shownSlug() || '{slug}' }}</code>
+        @if (slugConflicts()) {
+          <br>
+          <span style="color:var(--red);font-weight:700">
+            ⚠ Slug "{{ shownSlug() }}" already used in {{ activeTenants().length ? '' : '' }}{{ tenant() }}.
+          </span>
+        }
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Trigger Type</label>
+      <select
+        [value]="trigger()"
+        (change)="onTriggerInput($any($event.target).value)">
+        <option value="Webhook">Webhook</option>
+        <option value="Scheduled">Scheduled</option>
+        <option value="Manual">Manual</option>
+      </select>
+    </div>
+
+    @if (trigger() === 'Scheduled') {
+      <div class="form-group">
+        <label>CRON Expression</label>
+        <input
+          type="text"
+          style="font-family:var(--mono)"
+          [value]="cron()"
+          (input)="onCronInput($any($event.target).value)" />
+      </div>
+    }
+
+    <div class="form-group full">
+      <label>Description</label>
+      <textarea
+        rows="2"
+        [value]="description()"
+        (input)="onDescriptionInput($any($event.target).value)"></textarea>
+    </div>
+  </div>
+
+  <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
+  <button modalFooter class="btn" (click)="onSave()">Create Job &amp; open in Builder →</button>
+</ei-modal-shell>

@@ -1,0 +1,79 @@
+<div class="cv-head">
+  <div>
+    <h3>Executions</h3>
+    <div class="sub">{{ subtitle() }}</div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-outline btn-sm" (click)="onRefresh()">Refresh</button>
+  </div>
+</div>
+
+<div class="ctable">
+  <div
+    class="ctable-row head"
+    style="grid-template-columns:1fr 1.6fr 1.2fr 1fr 1fr .8fr 1fr 1.4fr .8fr">
+    <div>EXECUTION</div>
+    <div>JOB</div>
+    <div>STATUS</div>
+    <div>TRIGGER</div>
+    <div>ITEMS</div>
+    <div>ELAPSED</div>
+    <div>STARTED</div>
+    <div>CORRELATION ID</div>
+    <div>ACTIONS</div>
+  </div>
+
+  @for (ex of rows(); track ex.id) {
+    <div
+      class="ctable-row"
+      style="grid-template-columns:1fr 1.6fr 1.2fr 1fr 1fr .8fr 1fr 1.4fr .8fr">
+
+      <div style="font-family:var(--mono);font-size:10.5px">{{ shortId(ex.id) }}</div>
+
+      <div>
+        <b>{{ ex.job }}</b>
+        <span style="font-size:9px;color:var(--muted);margin-left:4px">v{{ ex.jobVersion || 1 }}</span>
+        @if (ex.hasBranches) {
+          <span class="branch-badge" style="font-size:9px;padding:1px 6px;margin-left:4px">⑂ branches</span>
+        }
+      </div>
+
+      <div>
+        <ei-status-dot [color]="dotColor(ex)" />
+        <ei-status-badge [variant]="statusVariant(ex)" [label]="ex.status" />
+      </div>
+
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);font-weight:700">
+        {{ ex.triggerSource || '—' }}
+      </div>
+
+      <div>{{ itemsLabel(ex) }}</div>
+      <div style="font-family:var(--mono);font-size:10.5px">{{ fmtHMS(ex.elapsedSec) }}</div>
+      <div style="font-family:var(--mono);font-size:10.5px">{{ ex.started }}</div>
+
+      <div>
+        <span
+          class="correlation-chip"
+          [title]="ex.correlationId || ''"
+          style="font-size:9.5px;padding:2px 7px">
+          {{ correlationPreview(ex) }}
+        </span>
+      </div>
+
+      <div style="display:flex;gap:3px">
+        <button class="btn btn-outline btn-xs" (click)="onView(ex.id)">View</button>
+        @if (canShowScatterShortcut(ex)) {
+          <button
+            class="btn btn-xs"
+            style="background:#7c3aed;color:#fff"
+            title="Open in Scatter-Gather"
+            (click)="onViewScatter(ex.id)">🔀</button>
+        }
+      </div>
+    </div>
+  } @empty {
+    <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No executions.
+    </div>
+  }
+</div>

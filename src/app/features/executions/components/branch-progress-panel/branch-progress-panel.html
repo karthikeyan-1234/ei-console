@@ -1,0 +1,49 @@
+<div class="detail-panel">
+  <h4><span class="dp-icon">⑂</span> Branch progress · parallel lanes</h4>
+  <div class="branch-progress-grid">
+
+    @for (b of execution().branches ?? []; track b.id) {
+      <div class="bp-card" [class]="branchCardClass(b.status)">
+        <div class="bp-head">
+          <div>
+            <div class="bp-name">⑂ {{ b.name }}</div>
+            <span class="bp-cond">{{ b.condition || '' }}</span>
+          </div>
+          <span class="status" [class]="branchStatusPillClass(b.status)">{{ b.status }}</span>
+        </div>
+        <div class="bp-children">
+          @for (c of b.children; track c.id) {
+            <div class="bp-child">
+              <span class="bpc-name">{{ c.name }}</span>
+              <span class="bpc-status" [style.color]="childColor(c.status)">{{ c.status }}</span>
+              @if (c.duration) {
+                <span style="font-family:var(--mono);font-size:9.5px;color:var(--muted)">
+                  {{ fmtMs(c.duration) }}
+                </span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (execution().join; as jp) {
+      <div class="bp-card" [class]="joinCardClass(jp.status)">
+        <div class="bp-head">
+          <div>
+            <div class="bp-name">⊧ {{ jp.name || 'Await' }}</div>
+            <span class="bp-cond">
+              {{ jp.joinMode }} · {{ jp.joinThreshold }} of {{ jp.branchesTotal }} · timeout {{ jp.joinTimeoutSeconds }}s
+            </span>
+          </div>
+          <span class="status" [class]="joinStatusPillClass(jp.status)">{{ jp.status }}</span>
+        </div>
+        @if (jp.branchesTotal) {
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">
+            Settled: <b>{{ jp.branchesSettled }}</b> / {{ jp.branchesTotal }}
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

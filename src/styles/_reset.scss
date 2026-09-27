@@ -1,0 +1,14 @@
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  color:var(--ink);
+  background:#eef3f9;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+a{color:var(--blue);text-decoration:none}
+
+html, body{height:100%;overflow:hidden}

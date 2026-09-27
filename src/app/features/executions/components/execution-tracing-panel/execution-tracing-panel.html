@@ -1,0 +1,35 @@
+<div class="detail-panel">
+  <h4><span class="dp-icon">🔗</span> Tracing &amp; context</h4>
+  <div class="detail-kv-grid">
+    <div class="kv">
+      <div class="k">Correlation ID</div>
+      <div class="v">
+        <span class="correlation-chip">{{ execution().correlationId || '—' }}</span>
+      </div>
+    </div>
+    <div class="kv">
+      <div class="k">Trigger source</div>
+      <div class="v">{{ execution().triggerSource || '—' }}</div>
+    </div>
+    <div class="kv">
+      <div class="k">Originating Core event</div>
+      <div class="v">{{ execution().coreEvent || '—' }}</div>
+    </div>
+    <div class="kv">
+      <div class="k">Worker instance</div>
+      <div class="v">{{ execution().workerInstance || '—' }}</div>
+    </div>
+    <div class="kv">
+      <div class="k">Job version pinned</div>
+      <div class="v">v{{ execution().jobVersion || 1 }}</div>
+    </div>
+    <div class="kv">
+      <div class="k">Idempotency key</div>
+      <div class="v">{{ execution().idempotencyKey || '—' }}</div>
+    </div>
+    <div class="kv">
+      <div class="k">Started at</div>
+      <div class="v">{{ execution().started }}</div>
+    </div>
+  </div>
+</div>

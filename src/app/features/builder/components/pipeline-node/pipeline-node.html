@@ -1,0 +1,119 @@
+<div
+  [class]="nodeClasses()"
+  [class.draggable]="isDraggable()"
+  [class.dragging]="isDragging()"
+  [attr.draggable]="isDraggable() ? 'true' : null"
+  (dragstart)="onDragStart($event)"
+  (dragend)="onDragEnd()">
+
+  <div class="pn-head">
+    <div class="pn-icon">{{ icon() }}</div>
+    <div class="pn-title">{{ task().name || task().type }}</div>
+
+    @if (chip(); as c) {
+      <span [class]="c.cls">{{ c.text }}</span>
+    }
+  </div>
+
+  <div class="pn-meta">
+    @switch (task().type) {
+
+      @case ('ApiPull') {
+        @if (asApiPull(); as t) {
+          {{ t.method || 'GET' }} {{ pullConnection()?.baseUrl || '—' }}{{ t.url || '' }}<br>
+          @if (pullConnection(); as c) {
+            {{ c.name }}<br>
+          }
+          @if (t.outputKey) {
+            stored as <code>{{ t.outputKey }}</code>
+          }
+        }
+      }
+
+      @case ('ApiPush') {
+        @if (asApiPush(); as t) {
+          {{ t.method || 'POST' }} {{ pushConnection()?.baseUrl || '—' }}{{ t.url || '' }}<br>
+          @if (pushConnection(); as c) {
+            {{ c.name }}
+          }
+        }
+      }
+
+      @case ('Transform') {
+        @if (asTransform(); as t) {
+          JSONata: <code>{{ transformFirstLine() }}</code>
+          @if (t.inputSource) {
+            <br>from <code>{{ t.inputSource }}</code>
+          }
+          @if (isIterator()) {
+            <br><b style="color:#7c3aed">🔀 Iterates</b>
+          }
+        }
+      }
+
+      @case ('JoinPoint') {
+        mode: <b>{{ joinMode() }}</b><br>
+        timeout: <code>{{ joinTimeoutSeconds() }}s</code>
+        @if (joinMode() === 'WaitN' && joinThreshold()) {
+          <br>threshold: <code>{{ joinThreshold() }}</code>
+        }
+      }
+
+      @case ('Branch') {
+        @if (branchConditionShort()) {
+          cond: <code>{{ branchConditionShort() }}</code>
+        } @else {
+          always
+        }
+        <br>mode: <b>{{ branchExecutionMode() }}</b>
+      }
+
+      @case ('Notify') {
+        @if (notifyTopic()) {
+          Kafka topic: <code>{{ notifyTopic() }}</code>
+        } @else if (notifyUrl()) {
+          Webhook: <code>{{ notifyUrl() }}</code>
+        } @else {
+          —
+        }
+      }
+    }
+  </div>
+
+  <!-- Branch children (read-only list) -->
+  @if (isBranch() && branchChildren().length && !suppressChildren()) {
+    <div class="subtasks-block">
+      <div class="sb-head">
+        <span class="iter-badge" style="background:#8b5cf6">branch children</span>
+        {{ branchChildren().length }}
+      </div>
+      <div class="subtasks-list">
+        @for (child of branchChildren(); track child.id) {
+          <div class="subtask-row" [attr.data-task-id]="child.id">
+            <span class="st-type">{{ subTaskIcon(child.type) }} {{ child.type }}</span>
+            <span class="st-meta">{{ child.name || child.type }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Iterator sub-tasks (read-only list) -->
+  @if (isIterator() && transformSubtasks().length) {
+    <div class="subtasks-block">
+      <div class="sb-head">
+        <span class="iter-badge">for-each item</span>
+        sub-tasks · {{ transformSubtasks().length }}
+      </div>
+      <div class="subtasks-list">
+        @for (sub of transformSubtasks(); track sub.id) {
+          <div class="subtask-row" [attr.data-task-id]="sub.id">
+            <span class="st-type">{{ sub.type }}</span>
+            <span class="st-meta">{{ subTaskMeta(sub) }}</span>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+</div>

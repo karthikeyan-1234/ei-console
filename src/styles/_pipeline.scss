@@ -1,0 +1,163 @@
+.pipeline-tree{
+  background:#fafbfc;border:1px solid #e2e8f0;border-radius:12px;
+  padding:16px;margin-bottom:12px;
+  overflow-x:auto;overflow-y:visible;scroll-behavior:smooth;
+}
+.pipeline-toplevel{
+  display:flex;gap:0;align-items:stretch;
+  min-width:min-content;padding:4px 2px;
+}
+.pipeline-node{
+  min-width:220px;background:#fff;border:1.5px solid #dbe4ef;
+  border-radius:12px;padding:12px 14px;transition:.15s;
+  position:relative;flex-shrink:0;display:flex;flex-direction:column;
+}
+.pipeline-node.iterator-node{border-color:#c4b5fd;background:linear-gradient(180deg,#faf5ff,#fff)}
+.pipeline-node.branch-node{border-color:#a78bfa;background:linear-gradient(180deg,#f5f3ff,#fff);min-width:auto}
+.pipeline-node.join-node{border-color:#60a5fa;background:linear-gradient(180deg,#eff6ff,#fff)}
+.pipeline-node .pn-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.pipeline-node .pn-icon{
+  width:24px;height:24px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:#fff;flex-shrink:0;
+}
+.pipeline-node.pull .pn-icon{background:var(--blue)}
+.pipeline-node.transform .pn-icon{background:var(--amber)}
+.pipeline-node.push .pn-icon{background:var(--purple)}
+.pipeline-node.notify .pn-icon{background:var(--green)}
+.pipeline-node.branch .pn-icon{background:#8b5cf6}
+.pipeline-node.join .pn-icon{background:#2563eb}
+.pipeline-node .pn-title{
+  font-weight:700;font-size:12.5px;flex:1;min-width:0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.pipeline-node .pn-meta{
+  font-size:10.5px;color:var(--muted);line-height:1.55;
+  margin-bottom:10px;word-break:break-word;
+}
+.pipeline-node .pn-meta code{
+  background:#f1f5f9;padding:1px 5px;border-radius:4px;
+  font-family:var(--mono);font-size:10px;
+}
+.pipeline-node .pn-actions{display:flex;gap:5px;flex-wrap:wrap;margin-top:auto}
+
+.pipeline-arrow{
+  display:flex;align-items:center;color:#94a3b8;
+  font-size:20px;padding:32px 8px 0;flex-shrink:0;
+  transition:.15s;position:relative;
+}
+.pipeline-arrow.clickable{cursor:pointer;padding:32px 12px 0}
+.pipeline-arrow.clickable:hover{color:var(--blue);transform:scale(1.15)}
+.pipeline-arrow.selected{
+  color:var(--blue);font-weight:900;
+  text-shadow:0 0 12px rgba(37,99,235,.6);
+}
+.pipeline-arrow.selected::after{
+  content:'+ insert';position:absolute;top:-2px;left:50%;
+  transform:translateX(-50%);font-size:9px;font-weight:800;
+  text-transform:uppercase;letter-spacing:.05em;color:var(--blue);
+  background:#eff6ff;padding:1px 6px;border-radius:4px;
+  border:1px solid #bfdbfe;white-space:nowrap;
+}
+
+.pipeline-node.draggable{cursor:grab}
+.pipeline-node.draggable:active{cursor:grabbing}
+.pipeline-node.draggable .pn-head::before{
+  content:'⠿';position:absolute;top:10px;right:10px;
+  color:#cbd5e1;font-size:12px;line-height:1;
+}
+.pipeline-node.draggable:hover .pn-head::before{color:#94a3b8}
+.pipeline-node.dragging{opacity:0.35}
+
+.drop-slot{
+  align-self:stretch;min-height:60px;min-width:8px;width:8px;
+  margin:0 4px;border-radius:4px;background:transparent;
+  transition:background .12s,width .12s;flex-shrink:0;position:relative;
+}
+.drop-slot.drop-active{
+  background:linear-gradient(180deg,transparent,#3b82f6,transparent);width:20px;
+}
+.drop-slot.drop-active::after{
+  content:'↕';position:absolute;top:50%;left:50%;
+  transform:translate(-50%,-50%);color:#3b82f6;font-weight:900;font-size:16px;
+}
+
+.lane-child-drop{
+  height:6px;margin:2px 0;border-radius:3px;
+  background:transparent;transition:background .12s,height .12s;
+}
+.lane-child-drop.drop-active{
+  background:#8b5cf6;height:12px;
+  box-shadow:0 0 8px rgba(139,92,246,.5);
+}
+.branch-container.dragging{opacity:0.35}
+
+.branch-container{display:flex;flex-direction:column;gap:6px;flex-shrink:0}
+.branch-header{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 10px;background:#ede9fe;
+  border:1.5px solid #a78bfa;border-radius:8px;
+  font-size:11px;color:#6d28d9;font-weight:800;
+  text-transform:uppercase;letter-spacing:.05em;position:relative;
+}
+.branch-header .bh-icon{font-size:12px}
+.branch-header .bh-count{
+  background:#7c3aed;color:#fff;padding:1px 6px;
+  border-radius:999px;font-size:9.5px;margin-left:auto;
+}
+.branch-header .bh-actions{display:flex;gap:4px;margin-left:6px}
+.branch-header .bh-actions button{
+  background:rgba(255,255,255,.7);color:#5b21b6;font-size:9.5px;
+  padding:2px 7px;border-radius:5px;font-weight:700;border:1px solid #c4b5fd;
+}
+.branch-header .bh-actions button:hover{background:#fff}
+
+.lanes{
+  display:grid;gap:8px;padding:8px;background:#faf5ff;
+  border:1.5px solid #c4b5fd;border-radius:10px;
+  border-top:none;border-top-left-radius:0;border-top-right-radius:0;
+}
+.lane{display:flex;flex-direction:column;gap:4px;min-width:0;position:relative}
+.lane-header{
+  font-size:9.5px;font-weight:800;color:#7c3aed;
+  text-transform:uppercase;letter-spacing:.06em;
+  padding:2px 4px;display:flex;align-items:center;gap:5px;
+}
+.lane-header .lh-dot{width:6px;height:6px;border-radius:50%;background:#8b5cf6}
+.lane-header .lh-count{
+  margin-left:auto;font-size:9px;background:#ede9fe;
+  color:#6d28d9;padding:1px 5px;border-radius:999px;
+}
+.lane-header .lh-label{
+  flex:1;min-width:0;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+.lane .pipeline-node{min-width:180px}
+
+.subtasks-block{
+  margin-top:10px;padding:10px 12px;
+  background:#f5f3ff;border:1px dashed #c4b5fd;border-radius:10px;
+}
+.subtasks-block .sb-head{
+  font-size:10px;font-weight:800;color:#6d28d9;
+  text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;
+  display:flex;align-items:center;gap:6px;
+}
+.subtasks-block .sb-head .iter-badge{
+  background:#7c3aed;color:#fff;padding:2px 8px;
+  border-radius:999px;font-size:9px;
+}
+.subtasks-list{display:flex;flex-direction:column;gap:6px}
+.subtask-row{
+  background:#fff;border:1px solid #e2e8f0;border-radius:8px;
+  padding:8px 10px;display:flex;align-items:center;gap:8px;font-size:11px;
+}
+.subtask-row .st-type{
+  font-weight:700;color:var(--purple);font-size:10px;
+  text-transform:uppercase;letter-spacing:.04em;flex-shrink:0;
+}
+.subtask-row .st-meta{
+  color:var(--muted);font-size:10.5px;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.subtask-row .st-actions{display:flex;gap:3px;flex-shrink:0}

@@ -1,0 +1,170 @@
+<div class="cv-head">
+  <div>
+    <h3>Scatter-Gather</h3>
+    <div class="sub">500 items × 2 sub-tasks · bounded by Redis</div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-success btn-sm" (click)="onStart()">▶ Run Simulation</button>
+    <button class="btn btn-outline btn-sm" (click)="onPause()">⏸ Pause</button>
+    <button class="btn btn-outline btn-sm" (click)="onReset()">↺ Reset</button>
+  </div>
+</div>
+
+<div class="sg-banner">
+  <b>Live scatter-gather:</b> bounded fan-out with Redis token bucket.
+</div>
+
+<!-- Limiter panel -->
+<div class="limiter-panel">
+  <div class="limiter-card tokens" [class.throttled]="tokensThrottled()">
+    <div class="lc-label">Redis · tokens available</div>
+    <div class="lc-value">
+      {{ tokens().toLocaleString() }}<span class="lc-unit">/ {{ tokensMax().toLocaleString() }}</span>
+    </div>
+    <div class="lc-bar">
+      <div class="lc-bar-fill" [style.width.%]="tokensPct()"></div>
+    </div>
+  </div>
+
+  <div class="limiter-card concurrency" [class.throttled]="concurrencyThrottled()">
+    <div class="lc-label">In-flight concurrency</div>
+    <div class="lc-value">
+      {{ dispatched() }}<span class="lc-unit">/ {{ maxConcurrent() }}</span>
+    </div>
+    <div class="lc-bar">
+      <div class="lc-bar-fill" [style.width.%]="concurrencyPct()"></div>
+    </div>
+  </div>
+
+  <div class="limiter-card rps" [class.throttled]="rpsThrottled()">
+    <div class="lc-label">Effective RPS</div>
+    <div class="lc-value">
+      {{ rpsThisSecond() }}<span class="lc-unit">/ {{ rps() }}</span>
+    </div>
+    <div class="lc-bar">
+      <div class="lc-bar-fill" [style.width.%]="rpsPct()"></div>
+    </div>
+  </div>
+
+  <div class="limiter-card">
+    <div class="lc-label">Queued</div>
+    <div class="lc-value">{{ queued() }}</div>
+  </div>
+</div>
+
+<!-- Fan-out progress -->
+<div class="fanout-progress">
+  <div class="fp-head">
+    <div class="fp-title">Fan-out progress</div>
+    <div class="fp-legend">
+      <span><span class="sw" style="background:#10b981"></span> Completed</span>
+      <span><span class="sw" style="background:#06b6d4"></span> In-flight</span>
+      <span><span class="sw" style="background:#8b5cf6"></span> Queued</span>
+      <span><span class="sw" style="background:#ef4444"></span> Failed</span>
+    </div>
+  </div>
+
+  <div class="fp-bar">
+    <div class="seg completed" [style.width.%]="completedPct()"></div>
+    <div class="seg dispatched" [style.width.%]="dispatchedPct()"></div>
+    <div class="seg failed" [style.width.%]="failedPct()"></div>
+    <div class="seg queued" [style.width.%]="queuedPct()"></div>
+  </div>
+
+  <div class="fp-counts">
+    <span>Completed: <b>{{ completed() }}</b></span>
+    <span>In-flight: <b>{{ dispatched() }}</b></span>
+    <span>Queued: <b>{{ queued() }}</b></span>
+    <span>Failed: <b>{{ failed() }}</b></span>
+    <span>Total units: <b>{{ totalUnits() }}</b></span>
+  </div>
+</div>
+
+<!-- Gather summary -->
+<div class="gather-summary">
+  <div class="gs-card green">
+    <div class="gs-label">Gathered · success</div>
+    <div class="gs-value">{{ completed() }}</div>
+  </div>
+  <div class="gs-card red">
+    <div class="gs-label">Gathered · failed</div>
+    <div class="gs-value">{{ failed() }}</div>
+  </div>
+  <div class="gs-card blue">
+    <div class="gs-label">Avg latency</div>
+    <div class="gs-value">{{ avgLatency() ? avgLatency() + ' ms' : '—' }}</div>
+  </div>
+  <div class="gs-card amber">
+    <div class="gs-label">P95 latency</div>
+    <div class="gs-value">{{ p95() ? p95() + ' ms' : '—' }}</div>
+  </div>
+</div>
+
+<!-- Items table -->
+<div class="item-table-wrap">
+  <div class="item-table-head">
+    <div class="ith-title">scatter_gather_items</div>
+    <div class="ith-filters">
+      <button
+        [class.active]="filter() === 'all'"
+        (click)="setFilter('all')">
+        {{ allLabel() }}
+      </button>
+      <button
+        [class.active]="filter() === 'dispatched'"
+        (click)="setFilter('dispatched')">
+        In-flight
+      </button>
+      <button
+        [class.active]="filter() === 'failed'"
+        (click)="setFilter('failed')">
+        Failed
+      </button>
+      <button
+        [class.active]="filter() === 'queued'"
+        (click)="setFilter('queued')">
+        Queued
+      </button>
+    </div>
+  </div>
+
+  <div class="item-table-scroll">
+    <div class="item-row head">
+      <div>ITEM KEY</div>
+      <div>SUB-TASK</div>
+      <div>STATUS</div>
+      <div>HTTP</div>
+      <div>ATTEMPTS</div>
+      <div>DURATION</div>
+      <div>ACTION</div>
+    </div>
+
+    @for (item of filteredItems(); track item.id + '-' + item.task) {
+      <div class="item-row">
+        <div class="ir-key">{{ item.id }}</div>
+        <div class="ir-task">{{ item.task }}</div>
+        <div>
+          <ei-status-badge [variant]="statusVariant(item.status)" [label]="item.status" />
+        </div>
+        <div class="ir-time">{{ item.http }}</div>
+        <div class="ir-time">{{ item.attempts }}</div>
+        <div class="ir-time">—</div>
+        <div>
+          @if (item.status === 'Failed') {
+            <button
+              class="btn btn-danger btn-xs"
+              (click)="replay(item.id, item.task)">↻ Replay</button>
+          } @else if (item.status === 'Dispatched') {
+            <span style="color:var(--muted);font-size:10px">cancel</span>
+          } @else {
+            <span style="color:var(--muted);font-size:10px">—</span>
+          }
+        </div>
+      </div>
+    } @empty {
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:11.5px">
+        No items match the current filter.
+      </div>
+    }
+  </div>
+</div>

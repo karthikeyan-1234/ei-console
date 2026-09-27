@@ -1,0 +1,33 @@
+<div class="builder-jobs">
+  <div class="builder-jobs-head">Jobs · {{ rowCount() }}</div>
+
+  @for (j of rows(); track j.id) {
+    <div
+      class="builder-job-item"
+      [class.active]="j.id === selectedJobId()"
+      (click)="onSelect(j)">
+
+      <div class="bj-name">
+        {{ j.name }}
+        <span style="font-size:9px;background:#eff6ff;color:#1d4ed8;padding:1px 5px;border-radius:3px;font-weight:700">
+          {{ versionLabel(j) }}
+        </span>
+      </div>
+
+      <div class="bj-meta">
+        {{ j.trigger }} · {{ tenantLabel(j) }}
+      </div>
+
+      <span
+        class="bj-badge"
+        [style.background]="isPlaceholder(j) ? '#fee2e2' : null"
+        [style.color]="isPlaceholder(j) ? '#991b1b' : null">
+        {{ badgeText(j) }}
+      </span>
+    </div>
+  } @empty {
+    <div style="padding:16px;text-align:center;color:var(--muted);font-size:11px">
+      No jobs. Use <b>+ Create Job</b> on the Jobs page.
+    </div>
+  }
+</div>

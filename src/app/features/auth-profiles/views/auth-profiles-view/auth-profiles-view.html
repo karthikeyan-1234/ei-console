@@ -1,0 +1,30 @@
+<div class="cv-head">
+  <div>
+    <h3>Auth Profiles</h3>
+    <div class="sub">Keycloak OAuth2, client credentials, API keys, mTLS.</div>
+  </div>
+  <div class="actions">
+    <button class="btn" (click)="openCreate()">+ New Auth Profile</button>
+  </div>
+</div>
+
+<div class="cgrid">
+  @for (a of rows(); track a.id) {
+    <ei-auth-card
+      [profile]="a"
+      (edited)="openEdit($event)"
+      (tested)="onTest($event)"
+      (deleted)="onDelete($event)" />
+  } @empty {
+    <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No auth profiles.
+    </div>
+  }
+</div>
+
+@if (modalOpen()) {
+  <ei-auth-modal
+    [profile]="modalEditing()"
+    (saved)="onSave($event)"
+    (cancelled)="closeModal()" />
+}

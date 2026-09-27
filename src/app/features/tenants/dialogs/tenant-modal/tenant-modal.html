@@ -1,0 +1,60 @@
+<ei-modal-shell
+  [title]="title()"
+  [subtitle]="subtitle()"
+  (closed)="onCancel()">
+
+  @if (error()) {
+    <div class="callout danger" style="margin-top:0">{{ error() }}</div>
+  }
+
+  <div class="form-grid">
+    <div class="form-group">
+      <label>Tenant Code</label>
+      <input
+        type="text"
+        style="font-family:var(--mono)"
+        [value]="code()"
+        [disabled]="isEdit()"
+        (input)="onCodeInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group">
+      <label>Display Name</label>
+      <input
+        type="text"
+        [value]="name()"
+        (input)="onNameInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group full">
+      <label>Core API Base URL</label>
+      <input
+        type="text"
+        style="font-family:var(--mono)"
+        [value]="coreUrl()"
+        (input)="onCoreUrlInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group full">
+      <label>Core DB Secret Ref (optional)</label>
+      <input
+        type="text"
+        style="font-family:var(--mono)"
+        [value]="coreDbRef()"
+        (input)="onCoreDbRefInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group">
+      <label>Status</label>
+      <select
+        [value]="active() ? '1' : '0'"
+        (change)="onActiveInput($any($event.target).value)">
+        <option value="1">Active</option>
+        <option value="0">Inactive</option>
+      </select>
+    </div>
+  </div>
+
+  <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
+  <button modalFooter class="btn" (click)="onSave()">Save Tenant</button>
+</ei-modal-shell>

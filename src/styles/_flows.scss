@@ -1,0 +1,31 @@
+.flow-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0}
+.flow-tabs button{
+  border:1px solid #d7e0ec;background:#fff;color:var(--slate);
+  padding:7px 14px;border-radius:8px;font-weight:600;
+  font-size:11.5px;transition:.15s;
+}
+.flow-tabs button.active{background:#0f1a2b;color:#fff;border-color:#0f1a2b}
+
+.flow-panel{display:none}
+.flow-panel.active{display:block}
+
+.flowbox{background:#07111f;border-radius:12px;padding:18px;color:#dbeafe;overflow:auto}
+.flowrow{display:flex;align-items:stretch;gap:6px;min-width:860px}
+.flowbox .node{
+  min-width:140px;flex:1;padding:12px;
+  border:1px solid #28415e;border-radius:10px;background:#0e1d31;
+}
+.flowbox .node strong{display:block;color:#fff;font-size:12px}
+.flowbox .node small{display:block;color:#7a93ad;margin-top:3px;font-size:10.5px;line-height:1.45}
+.flowbox .node.blue{border-color:#2563eb}
+.flowbox .node.cyan{border-color:#06b6d4}
+.flowbox .node.green{border-color:#10b981}
+.flowbox .node.amber{border-color:#f59e0b}
+.flowbox .node.purple{border-color:#8b5cf6}
+.flowbox .node.red{border-color:#ef4444}
+.flowbox .arrow{display:flex;align-items:center;color:#3b5570;font-size:18px;flex-shrink:0}
+.flowbox .lane{
+  margin-top:12px;padding:10px 14px;
+  border:1px dashed #2a4060;border-radius:10px;
+  color:#8fa4bc;font-size:11.5px;
+}

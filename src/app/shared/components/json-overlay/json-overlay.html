@@ -1,0 +1,43 @@
+@if (visible()) {
+  @if (flow(); as f) {
+    <div class="json-overlay show"
+         [style.left.px]="left()"
+         [style.top.px]="top()"
+         (mouseleave)="onMouseLeave()">
+
+      <button class="jo-close" (click)="close()" title="Close">✕</button>
+
+      <div class="jo-head">
+        📥 Input from: {{ sourceLabel(f) }}
+        @if (f.iterator) {
+          <span class="jo-chip">per item</span>
+        }
+      </div>
+
+      <div class="jo-section">
+        <div class="jo-label">Parent node</div>
+        <div class="jo-parent">
+          @if (f.sourceId) {
+            ↩ from <code>{{ f.sourceId }}</code>
+          } @else {
+            ⬅ pipeline trigger
+          }
+        </div>
+      </div>
+
+      <div class="jo-section">
+        <div class="jo-label">Input JSON</div>
+        <pre>{{ formatJson(f.inputJson) }}</pre>
+      </div>
+
+      <div class="jo-section">
+        <div class="jo-label">Output preview</div>
+        <pre>{{ formatJson(f.outputJson) }}</pre>
+      </div>
+
+      @for (k of timerKey(); track k) {
+        <div class="jo-timer"></div>
+      }
+    </div>
+  }
+}

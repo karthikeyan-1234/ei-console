@@ -1,0 +1,64 @@
+<div class="detail-panel">
+  <h4><span class="dp-icon">📊</span> Task Step Log · ei.task_execution_log</h4>
+  <div class="ctable">
+
+    <div
+      class="ctable-row head"
+      style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 1.6fr">
+      <div>#</div>
+      <div>TASK</div>
+      <div>TYPE</div>
+      <div>STATUS</div>
+      <div>ATT</div>
+      <div>STARTED</div>
+      <div>COMPLETED</div>
+      <div>DURATION</div>
+      <div>SUMMARY</div>
+    </div>
+
+    @for (l of rows(); track l.taskId + '-' + l.orderIndex) {
+      <div
+        class="ctable-row"
+        style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 1.6fr">
+
+        <div style="font-family:var(--mono);font-size:10.5px">{{ l.orderIndex }}</div>
+
+        <div>
+          {{ l.parentTaskId ? '↳ ' : '' }}<b>{{ l.name }}</b><br>
+          <span style="font-size:9.5px;color:var(--muted);font-family:var(--mono)">
+            task_id: {{ l.taskId }}
+            @if (l.parentTaskId) { · parent: {{ l.parentTaskId }} }
+          </span>
+        </div>
+
+        <div>
+          @if (typeBadgeClass(l.type); as badge) {
+            <span [class]="badge" style="font-size:9.5px;padding:1px 6px">{{ l.type }}</span>
+          } @else {
+            <span style="font-size:10.5px;color:var(--muted)">{{ l.type }}</span>
+          }
+        </div>
+
+        <div>
+          <ei-status-badge [variant]="statusVariant(l.status)" [label]="l.status" />
+        </div>
+
+        <div style="font-family:var(--mono);font-size:10.5px">{{ l.attempt }}</div>
+        <div style="font-family:var(--mono);font-size:10.5px">{{ l.started }}</div>
+        <div style="font-family:var(--mono);font-size:10.5px">{{ l.completed }}</div>
+        <div style="font-family:var(--mono);font-size:10.5px">
+          {{ l.duration ? fmtMs(l.duration) : '—' }}
+        </div>
+        <div
+          [title]="l.summary"
+          style="font-family:var(--mono);font-size:9.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          {{ l.summary }}
+        </div>
+      </div>
+    } @empty {
+      <div style="padding:20px;text-align:center;color:var(--muted);font-size:11.5px">
+        No step log entries for this execution.
+      </div>
+    }
+  </div>
+</div>

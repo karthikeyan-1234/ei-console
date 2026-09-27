@@ -1,0 +1,24 @@
+<div class="cv-head">
+  <div>
+    <h3>All Jobs</h3>
+    <div class="sub">{{ subtitle() }}</div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-outline btn-sm" (click)="onRefresh()">Refresh</button>
+    <button class="btn" (click)="onCreate()">+ Create Job</button>
+  </div>
+</div>
+
+<ei-jobs-toolbar
+  [(search)]="searchQuery"
+  [(status)]="statusFilter" />
+
+<ei-jobs-table
+  [rows]="filteredJobs()"
+  (jobOpened)="onOpenJob($event)" />
+
+@if (createModalOpen()) {
+  <ei-create-job-modal
+    (saved)="onJobCreated($event)"
+    (cancelled)="onCreateCancelled()" />
+}

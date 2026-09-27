@@ -1,0 +1,34 @@
+<div
+  class="pipeline-tree"
+  #pipelineTree>
+  <div class="pipeline-toplevel">
+
+    @for (block of blocks(); track block.startIdx; let i = $index; let isLast = $last) {
+
+      <div
+        class="drop-slot"
+        [class.drop-active]="dropTargetsVisible()"
+        (dragover)="onSlotDragOver($event)"
+        (drop)="onSlotDrop($event, i)"></div>
+
+      @if (block.type === 'node' && block.task) {
+        <ei-pipeline-node
+          [task]="block.task"
+          dragKind="top"
+          [dragTopIdx]="block.startIdx" />
+      } @else if (block.type === 'fork') {
+        <ei-fork-block [block]="block" />
+      }
+
+      @if (!isLast) {
+        <div class="pipeline-arrow">→</div>
+      }
+    }
+
+    <div
+      class="drop-slot"
+      [class.drop-active]="dropTargetsVisible()"
+      (dragover)="onSlotDragOver($event)"
+      (drop)="onSlotDrop($event, lastSlotIdx())"></div>
+  </div>
+</div>

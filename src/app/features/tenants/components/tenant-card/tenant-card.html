@@ -1,0 +1,41 @@
+<div
+  class="ccard"
+  [style.border-color]="isActive() ? '#2563eb' : null"
+  [style.box-shadow]="isActive() ? '0 0 0 3px rgba(37,99,235,.12)' : null">
+
+  <div class="cc-head">
+    <div class="cc-title">🏢 {{ tenant().name }}</div>
+    <span class="tenant-badge">{{ tenant().active ? 'Active' : 'Inactive' }}</span>
+  </div>
+
+  <div class="cc-meta">
+    <div>
+      <b>Code:</b>
+      <code style="font-family:var(--mono);font-size:10.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px">
+        {{ tenant().code }}
+      </code>
+    </div>
+    <div>
+      <b>Core URL:</b>
+      <code style="font-family:var(--mono);font-size:10.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px">
+        {{ tenant().coreUrl }}
+      </code>
+    </div>
+    <div style="margin-top:6px">
+      <b>{{ counts().jobs }}</b> jobs ·
+      <b>{{ counts().conns }}</b> conns ·
+      <b>{{ counts().auths }}</b> auth ·
+      <b>{{ counts().wms }}</b> wm
+    </div>
+  </div>
+
+  <div class="cc-actions">
+    @if (isActive()) {
+      <button class="btn btn-outline btn-sm" disabled style="opacity:.5">Active</button>
+    } @else {
+      <button class="btn btn-outline btn-sm" (click)="onSwitch()">Switch</button>
+    }
+    <button class="btn btn-outline btn-sm" (click)="onEdit()">Edit</button>
+    <button class="btn-ghost btn btn-sm" style="color:var(--red)" (click)="onDelete()">Delete</button>
+  </div>
+</div>

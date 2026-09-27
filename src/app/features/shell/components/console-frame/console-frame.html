@@ -1,0 +1,49 @@
+<div class="console-shell">
+  <div class="console-top">
+    <button class="menu-toggle" (click)="onToggleSidebar()" title="Toggle sidebar">☰</button>
+
+    <div class="dots">
+      <span class="dot"></span>
+      <span class="dot"></span>
+      <span class="dot"></span>
+    </div>
+
+    <div class="console-brand">EI <span>Management Console</span></div>
+
+    <div class="demo-controls">
+      <button
+        class="btn-demo"
+        [class.primary]="startButtonPrimary()"
+        (click)="onToggleDemo()">
+        {{ startButtonLabel() }}
+      </button>
+      <button class="btn-demo" (click)="onReset()">↺ Reset</button>
+      <span class="live-pill" [class.paused]="livePillPaused()">
+        <span class="dot"></span>
+        <span>{{ livePillText() }}</span>
+      </span>
+    </div>
+
+    <div class="tenant-selector">
+      <span style="color:var(--cyan);font-size:13px">🏢</span>
+      <span class="ts-label">Tenant</span>
+      <select (change)="onTenantChange($any($event.target).value)">
+        @for (t of activeTenants(); track t.id) {
+          <option [value]="t.id" [selected]="t.id === activeTenantId()">{{ t.name }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="conn-status">
+      <span class="dot"></span>
+      {{ signalr.connected() ? 'SignalR Connected' : 'SignalR Offline' }}
+    </div>
+  </div>
+
+  <div class="console-content" [class.collapsed]="sidebarCollapsed()">
+    <ei-console-sidebar />
+    <div class="console-main">
+      <router-outlet />
+    </div>
+  </div>
+</div>

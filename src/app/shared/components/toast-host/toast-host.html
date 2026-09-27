@@ -1,0 +1,8 @@
+<div class="toast-container">
+  @for (t of items(); track t.id) {
+    <div class="toast" [class]="t.kind">
+      <span style="font-size:15px">{{ icon(t.kind) }}</span>
+      <span>{{ t.message }}</span>
+    </div>
+  }
+</div>

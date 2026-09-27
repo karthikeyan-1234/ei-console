@@ -1,0 +1,157 @@
+.console-shell{
+  background:#f7f9fc;
+  overflow:hidden;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+.console-top{
+  min-height:52px;background:#0a1628;color:#fff;
+  display:flex;align-items:center;padding:0 16px;gap:12px;
+  font-size:12px;border-bottom:1px solid #1e3048;flex-wrap:wrap;
+}
+.console-top .dots{display:flex;gap:5px}
+.console-top .dot{width:9px;height:9px;border-radius:50%}
+.console-top .dot:nth-child(1){background:#ff5f57}
+.console-top .dot:nth-child(2){background:#febc2e}
+.console-top .dot:nth-child(3){background:#28c840}
+.console-brand{font-weight:800;font-size:12.5px;margin-left:4px}
+.console-brand span{color:var(--cyan)}
+
+.tenant-selector{
+  margin-left:auto;display:flex;align-items:center;gap:8px;
+  background:#132440;border:1px solid #2a4060;border-radius:8px;
+  padding:5px 12px;font-size:11.5px;
+}
+.tenant-selector .ts-label{
+  color:#94a8be;font-size:10px;text-transform:uppercase;
+  letter-spacing:.05em;font-weight:700;
+}
+.tenant-selector select{
+  background:transparent;border:none;color:#fff;font-size:11.5px;
+  font-weight:600;cursor:pointer;outline:none;padding:2px 4px;
+}
+.tenant-selector select option{background:#0f1a2b;color:#fff}
+
+.conn-status{
+  display:flex;align-items:center;gap:5px;font-size:11px;color:#34d399;
+  padding:4px 10px;background:#052e22;border-radius:999px;
+}
+.conn-status .dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#34d399;animation:pulse 1.5s infinite;
+}
+
+.console-content{
+  flex:1 1 auto;
+  min-height:0;
+  display:grid;
+  grid-template-columns:200px 1fr;
+  overflow:hidden;
+}
+
+.console-side{
+  background:#0c1727;color:#aebdce;
+  padding:14px 8px;border-right:1px solid #1e3048;
+  height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.console-side .side-section{
+  font-size:9.5px;text-transform:uppercase;letter-spacing:.14em;
+  color:#4b6178;font-weight:800;padding:12px 12px 6px;
+}
+.console-side .side-item{
+  padding:9px 12px;border-radius:8px;font-size:12px;transition:.12s;
+  cursor:pointer;display:flex;align-items:center;gap:10px;
+  margin-bottom:2px;user-select:none;
+}
+.console-side .side-item:hover{background:#14253a;color:#fff}
+.console-side .side-item.active{background:#1d3552;color:#fff;font-weight:600}
+.console-side .side-item .si-ico{font-size:14px;width:18px;text-align:center;opacity:.85}
+.console-side .side-item .si-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:9.5px;font-weight:800;padding:2px 6px;border-radius:999px;
+}
+.console-side .side-item.active .si-badge{background:#fff;color:var(--red)}
+
+.console-main{
+  padding:20px 24px;
+  background:#f7f9fc;
+  min-width:0;
+  min-height:0;
+  height:100%;
+  overflow-y:auto;
+  overflow-x:hidden;
+}
+
+.console-view{display:none}
+.console-view.active{display:block}
+
+.cv-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:16px;margin-bottom:16px;flex-wrap:wrap;
+}
+.cv-head .actions{display:flex;gap:8px;flex-wrap:wrap}
+
+.console-content.collapsed{grid-template-columns:1fr}
+.console-content.collapsed .console-side{display:none}
+.console-side .side-item{color:inherit;text-decoration:none}
+
+/* Demo controls hosted inside the console-top bar */
+.console-top .demo-controls{margin-left:auto;gap:6px}
+.console-top .btn-demo{padding:4px 10px;font-size:10.5px}
+.console-top .live-pill{padding:3px 10px;font-size:10.5px}
+.console-top .menu-toggle{color:#7a8fa8}
+.console-top .menu-toggle:hover{background:#1a2a42;color:#fff}
+.console-top .tenant-selector{margin-left:0}
+
+/* Full-viewport console — no outer padding, no rounded corners */
+ei-console-frame{display:block;min-height:100vh}
+ei-console-frame .console-shell{
+  min-height:100vh;
+  border-radius:0;
+  border:none;
+  box-shadow:none;
+}
+
+ei-console-frame{display:block;height:100vh;overflow:hidden}
+ei-console-frame .console-top{flex-shrink:0}
+
+
+/* Disabled sidebar entry — visible but inert */
+.console-side .side-item--disabled{
+  position:relative;
+  opacity:.45;
+  cursor:not-allowed;
+}
+.console-side .side-item--disabled:hover{
+  background:transparent;
+  color:#aebdce;
+}
+
+/* Hover tooltip — floats below the item, inside the sidebar */
+.console-side .side-tooltip{
+  position:absolute;
+  left:8px;
+  right:8px;
+  top:calc(100% + 4px);
+  background:#0f1a2b;
+  color:#e2e8f0;
+  padding:6px 10px;
+  border-radius:6px;
+  font-size:10.5px;
+  font-weight:500;
+  text-align:center;
+  border:1px solid #2a4060;
+  box-shadow:0 6px 16px rgba(0,0,0,.45);
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .15s ease;
+  z-index:100;
+  white-space:nowrap;
+}
+.console-side .side-item--disabled:hover .side-tooltip{
+  opacity:1;
+}

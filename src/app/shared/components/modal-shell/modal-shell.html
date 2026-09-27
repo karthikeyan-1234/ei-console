@@ -1,0 +1,19 @@
+<div class="modal-overlay open" (click)="onBackdropClick($event)">
+  <div class="modal" [class.wide]="wide()" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <h3>{{ title() }}</h3>
+        @if (subtitle()) {
+          <div class="sub">{{ subtitle() }}</div>
+        }
+      </div>
+      <button class="modal-close" (click)="onClose()" title="Close">✕</button>
+    </div>
+    <div class="modal-body">
+      <ng-content />
+    </div>
+    <div class="modal-foot">
+      <ng-content select="[modalFooter]" />
+    </div>
+  </div>
+</div>

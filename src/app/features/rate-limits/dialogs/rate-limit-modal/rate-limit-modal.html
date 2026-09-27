@@ -1,0 +1,63 @@
+<ei-modal-shell
+  [title]="title()"
+  [subtitle]="subtitle()"
+  (closed)="onCancel()">
+
+  @if (error()) {
+    <div class="callout danger" style="margin-top:0">{{ error() }}</div>
+  }
+
+  <div class="form-grid">
+
+    <div class="form-group full">
+      <label>Connection (by FK)</label>
+      <select (change)="onConnectionInput($any($event.target).value)">
+        <option value="" [selected]="connectionId() === ''">— Select —</option>
+        @for (c of connectionOptions(); track c.id) {
+          <option [value]="c.id" [selected]="c.id === connectionId()">
+            {{ c.name }} · {{ c.provider }}
+          </option>
+        }
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Scope</label>
+      <select (change)="onScopeInput($any($event.target).value)">
+        <option value="PerConnection" [selected]="scope() === 'PerConnection'">PerConnection</option>
+        <option value="PerTenant" [selected]="scope() === 'PerTenant'">PerTenant</option>
+        <option value="Global" [selected]="scope() === 'Global'">Global</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Max RPS</label>
+      <input
+        type="number"
+        min="1"
+        [value]="rps()"
+        (input)="onRpsInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group">
+      <label>Burst</label>
+      <input
+        type="number"
+        min="1"
+        [value]="burst()"
+        (input)="onBurstInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group">
+      <label>Max Concurrent</label>
+      <input
+        type="number"
+        min="1"
+        [value]="concurrent()"
+        (input)="onConcurrentInput($any($event.target).value)" />
+    </div>
+  </div>
+
+  <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
+  <button modalFooter class="btn" (click)="onSave()">Save Policy</button>
+</ei-modal-shell>

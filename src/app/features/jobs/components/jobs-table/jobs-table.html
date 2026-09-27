@@ -1,0 +1,49 @@
+<div class="ctable">
+  <div
+    class="ctable-row head"
+    style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr .5fr">
+    <div>JOB</div>
+    <div>STATUS</div>
+    <div>TRIGGER</div>
+    <div>LAST RUN</div>
+    <div>NEXT RUN</div>
+    <div></div>
+  </div>
+
+  @for (job of rows(); track job.id) {
+    <div
+      class="ctable-row"
+      style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr .5fr;cursor:pointer"
+      (click)="onRowClick(job)">
+
+      <div>
+        <b>{{ job.name }}</b>
+        <span style="font-size:9.5px;background:#eff6ff;color:#1d4ed8;padding:1px 6px;border-radius:4px;font-weight:700;margin-left:6px">
+          {{ versionLabel(job) }}
+        </span>
+        <br>
+        <span style="color:var(--muted);font-size:10px;font-family:var(--mono)">{{ job.slug }}</span>
+        <br>
+        <span
+          style="font-size:10px"
+          [style.color]="needsPipeline(job) ? '#b91c1c' : null">
+          {{ taskInfoText(job) }}
+        </span>
+      </div>
+
+      <div>
+        <ei-status-dot [color]="dotColor(job)" />
+        <ei-status-badge [variant]="statusVariant(job)" [label]="job.status" />
+      </div>
+
+      <div>{{ job.trigger }}</div>
+      <div>{{ job.lastRun }}</div>
+      <div>{{ job.next }}</div>
+      <div style="text-align:center;color:var(--muted)">⋮</div>
+    </div>
+  } @empty {
+    <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No jobs for {{ tenantLabel() }}
+    </div>
+  }
+</div>

@@ -1,0 +1,51 @@
+<div class="cv-head">
+  <div>
+    <h3>Connections</h3>
+    <div class="sub">Provider integration endpoints.</div>
+  </div>
+  <div class="actions">
+    <button class="btn" (click)="openCreate()">+ New Connection</button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="toolbar-left">
+    <input
+      class="input"
+      type="text"
+      placeholder="🔎 Search…"
+      [value]="search()"
+      (input)="onSearchInput($any($event.target).value)" />
+
+    <select
+      class="input"
+      [value]="protocolFilter()"
+      (change)="onProtocolInput($any($event.target).value)">
+      <option value="">All protocols</option>
+      <option value="Rest">Rest</option>
+      <option value="Soap">Soap</option>
+      <option value="Json">Json</option>
+    </select>
+  </div>
+</div>
+
+<div class="cgrid">
+  @for (c of rows(); track c.id) {
+    <ei-connection-card
+      [connection]="c"
+      (edited)="openEdit($event)"
+      (tested)="onTest($event)"
+      (deleted)="onDelete($event)" />
+  } @empty {
+    <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No connections match the current filter.
+    </div>
+  }
+</div>
+
+@if (modalOpen()) {
+  <ei-connection-modal
+    [connection]="modalEditing()"
+    (saved)="onSave($event)"
+    (cancelled)="closeModal()" />
+}

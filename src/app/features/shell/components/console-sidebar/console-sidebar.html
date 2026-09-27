@@ -1,0 +1,54 @@
+<div class="console-side">
+  <div class="side-section">Operate</div>
+
+  <a class="side-item" routerLink="/console/jobs" routerLinkActive="active">
+    <span class="si-ico">▦</span> Jobs
+  </a>
+
+  <a class="side-item" routerLink="/console/executions" routerLinkActive="active">
+    <span class="si-ico">▶</span> Executions
+  </a>
+
+  <a class="side-item" routerLink="/console/scatter" routerLinkActive="active">
+    <span class="si-ico">🔀</span> Scatter-Gather
+    @if (scatterCount() > 0) {
+      <span class="si-badge">{{ scatterCount() }}</span>
+    }
+  </a>
+
+  <a class="side-item" routerLink="/console/dlq" routerLinkActive="active">
+    <span class="si-ico">⚠</span> Dead Letter
+    @if (dlqCount() > 0) {
+      <span class="si-badge">{{ dlqCount() }}</span>
+    }
+  </a>
+
+  <div class="side-section">Configure</div>
+
+  <a class="side-item" routerLink="/console/tenants" routerLinkActive="active">
+    <span class="si-ico">🏢</span> Tenants
+  </a>
+
+  <a class="side-item" routerLink="/console/connections" routerLinkActive="active">
+    <span class="si-ico">🔌</span> Connections
+  </a>
+
+  <a class="side-item" routerLink="/console/auth" routerLinkActive="active">
+    <span class="si-ico">🔐</span> Auth Profiles
+  </a>
+
+  <a class="side-item" routerLink="/console/rate" routerLinkActive="active">
+    <span class="si-ico">⏱</span> Rate Limits
+  </a>
+
+<div class="side-item side-item--disabled" aria-disabled="true">
+  <span class="si-ico">💧</span> Watermarks
+  <span class="side-tooltip">Feature not implemented yet</span>
+</div>
+
+  <div class="side-section">Build</div>
+
+  <a class="side-item" routerLink="/console/builder" routerLinkActive="active">
+    <span class="si-ico">🔧</span> Job Builder
+  </a>
+</div>

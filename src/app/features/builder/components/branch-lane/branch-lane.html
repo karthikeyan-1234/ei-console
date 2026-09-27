@@ -1,0 +1,31 @@
+<div class="lane" [attr.data-lane-branch-idx]="idx()">
+
+  <div class="lane-header">
+    <span class="lh-dot"></span>
+    <span class="lh-label">{{ name() }}</span>
+    <span class="lh-count">{{ childrenCount() }}</span>
+    <button
+      class="lane-delete"
+      disabled
+      title="Remove this lane (coming in a later segment)">✕</button>
+  </div>
+
+  <ei-pipeline-node [task]="branch()" [suppressChildren]="true" />
+
+  @for (child of children(); track child.id; let i = $index) {
+    <div
+      class="lane-child-drop"
+      [class.drop-active]="childTargetsVisible()"
+      [attr.data-child-slot]="idx() + ':' + i"
+      [attr.data-lane-branch-idx]="idx()"></div>
+
+    <ei-pipeline-node [task]="child" />
+  }
+
+  <div
+    class="lane-child-drop"
+    [class.drop-active]="childTargetsVisible()"
+    [attr.data-child-slot]="idx() + ':' + childrenCount()"
+    [attr.data-lane-branch-idx]="idx()"></div>
+
+</div>

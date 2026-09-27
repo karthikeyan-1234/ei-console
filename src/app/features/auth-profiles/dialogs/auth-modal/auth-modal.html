@@ -1,0 +1,155 @@
+<ei-modal-shell
+  [title]="title()"
+  [subtitle]="subtitle()"
+  (closed)="onCancel()">
+
+  @if (error()) {
+    <div class="callout danger" style="margin-top:0">{{ error() }}</div>
+  }
+
+  <div class="form-grid">
+
+    <div class="form-group full">
+      <label>Profile Name</label>
+      <input
+        type="text"
+        [value]="name()"
+        (input)="onNameInput($any($event.target).value)" />
+    </div>
+
+    <div class="form-group full">
+      <label>Auth Type</label>
+      <select
+        [value]="type()"
+        (change)="onTypeInput($any($event.target).value)">
+        <option value="KeycloakAuthCodeExchange">Keycloak OAuth2 Authorization Code + Token Exchange (RFC 8693)</option>
+        <option value="OAuth2ClientCredentials">OAuth2 Client Credentials</option>
+        <option value="ApiKey">API Key</option>
+        <option value="WsSecurityUsernameToken">WS-Security UsernameToken</option>
+        <option value="MutualTls">Mutual TLS</option>
+      </select>
+    </div>
+
+    @if (showCredentialBlock()) {
+      <div class="form-group full">
+        <div style="padding:10px 12px;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#1e40af;line-height:1.5">
+          <b>{{ headerTitle() }}</b> — {{ headerHint() }}
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>{{ baseUrlLabel() }}</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().kcBaseUrl"
+              (input)="patchForm('kcBaseUrl', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Realm</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().realm"
+              (input)="patchForm('realm', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Client ID</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().clientId"
+              (input)="patchForm('clientId', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group full">
+            <label>Client Secret Reference</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().secretRef"
+              (input)="patchForm('secretRef', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Target Audience</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().audience"
+              (input)="patchForm('audience', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Scope</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().scope"
+              (input)="patchForm('scope', $any($event.target).value)" />
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (showMtlsBlock()) {
+      <div class="form-group full">
+        <div style="padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#166534;line-height:1.5">
+          <b>🔒 Mutual TLS Configuration</b> — Client cert &amp; key from Key Vault.
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Client Certificate (Key Vault secret URI)</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().certRef"
+              (input)="patchForm('certRef', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group full">
+            <label>Client Private Key (Key Vault secret URI)</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().keyRef"
+              (input)="patchForm('keyRef', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group full">
+            <label>CA Certificate (Key Vault secret URI) — optional</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().caRef"
+              (input)="patchForm('caRef', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group full">
+            <label>Certificate Password (Key Vault secret URI) — optional</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().passRef"
+              (input)="patchForm('passRef', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Client Certificate Thumbprint (optional)</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              [value]="form().thumbprint"
+              (input)="patchForm('thumbprint', $any($event.target).value)" />
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
+  <button modalFooter class="btn" (click)="onSave()">Save Auth Profile</button>
+</ei-modal-shell>

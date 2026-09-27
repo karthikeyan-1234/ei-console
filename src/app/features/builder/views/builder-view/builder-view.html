@@ -1,0 +1,27 @@
+<div class="cv-head">
+  <div>
+    <h3>Job Builder</h3>
+    <div class="sub">Compose the pipeline that runs for this job.</div>
+  </div>
+  <div class="actions">
+    <button
+      class="btn btn-outline btn-sm"
+      [class.btn-demo]="true"
+      [style.color]="dragPreviewActive() ? '#2563eb' : null"
+      [style.border-color]="dragPreviewActive() ? '#bfdbfe' : null"
+      (click)="toggleDragPreview()">
+      {{ dragPreviewActive() ? '◉ Drop slots visible' : '◎ Preview drop slots' }}
+    </button>
+    <button class="btn btn-outline btn-sm" (click)="toggleJobsList()">
+      {{ jobsListCollapsed() ? '▶ Show jobs' : '◀ Hide jobs' }}
+    </button>
+  </div>
+</div>
+
+<div class="builder-layout" [class.collapsed]="jobsListCollapsed()">
+  <ei-builder-jobs-list
+    [selectedJobId]="selectedJobId()"
+    (jobSelected)="onJobSelected($event)" />
+
+  <ei-builder-detail [jobId]="selectedJobId()" />
+</div>

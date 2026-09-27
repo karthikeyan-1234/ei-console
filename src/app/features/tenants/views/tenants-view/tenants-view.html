@@ -1,0 +1,32 @@
+<div class="cv-head">
+  <div>
+    <h3>Tenants</h3>
+    <div class="sub">Multi-tenant routing registry.</div>
+  </div>
+  <div class="actions">
+    <button class="btn" (click)="openCreate()">+ New Tenant</button>
+  </div>
+</div>
+
+<div class="cgrid">
+  @for (t of rows(); track t.id) {
+    <ei-tenant-card
+      [tenant]="t"
+      [counts]="countsFor(t.id)"
+      [isActive]="t.id === activeTenantId()"
+      (switched)="onSwitch($event)"
+      (edited)="openEdit($event)"
+      (deleted)="onDelete($event)" />
+  } @empty {
+    <div style="grid-column:1/-1;padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No tenants.
+    </div>
+  }
+</div>
+
+@if (modalOpen()) {
+  <ei-tenant-modal
+    [tenant]="modalEditingTenant()"
+    (saved)="onSave($event)"
+    (cancelled)="closeModal()" />
+}

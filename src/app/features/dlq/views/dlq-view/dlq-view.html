@@ -1,0 +1,57 @@
+<div class="cv-head">
+  <div>
+    <h3>Dead Letter Queue</h3>
+    <div class="sub">Replay creates a new execution path.</div>
+  </div>
+  <div class="actions">
+    <button class="btn btn-outline btn-sm" (click)="onRefresh()">Refresh</button>
+  </div>
+</div>
+
+<div class="ctable">
+  <div
+    class="ctable-row head"
+    style="grid-template-columns:1fr 1.2fr 1.3fr 1.3fr 1fr 1fr .7fr .8fr">
+    <div>DLQ ID</div>
+    <div>ITEM</div>
+    <div>SOURCE</div>
+    <div>JOB</div>
+    <div>ERROR</div>
+    <div>FIRST FAILED</div>
+    <div>ATTEMPTS</div>
+    <div>ACTION</div>
+  </div>
+
+  @for (d of rows(); track d.id) {
+    <div
+      class="ctable-row"
+      style="grid-template-columns:1fr 1.2fr 1.3fr 1.3fr 1fr 1fr .7fr .8fr">
+
+      <div style="font-family:var(--mono);font-size:10.5px">{{ d.id }}</div>
+      <div>{{ d.item }}</div>
+
+      <div>
+        <code style="font-family:var(--mono);font-size:10px;background:#f1f5f9;padding:1px 5px;border-radius:3px">
+          {{ d.source }}
+        </code>
+      </div>
+
+      <div>{{ d.job }}</div>
+      <div style="color:var(--red);font-weight:600">{{ d.error }}</div>
+      <div>{{ d.firstFailed }}</div>
+      <div>{{ d.attempts }}</div>
+
+      <div>
+        @if (d.status === 'Pending') {
+          <button class="btn btn-outline btn-xs" (click)="onReplay(d.id)">Replay</button>
+        } @else {
+          <button class="btn btn-outline btn-xs" (click)="onView(d.id)">View</button>
+        }
+      </div>
+    </div>
+  } @empty {
+    <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">
+      No dead-letter items.
+    </div>
+  }
+</div>

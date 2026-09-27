@@ -1,0 +1,62 @@
+.status{
+  padding:3px 9px;border-radius:999px;font-weight:700;
+  text-align:center;display:inline-block;font-size:10.5px;white-space:nowrap;
+}
+.running{background:#e5f2ff;color:#1d4ed8}
+.success{background:#e7f8f1;color:#047857}
+.failed{background:#ffe9e9;color:#b91c1c}
+.paused{background:#fff4db;color:#a16207}
+.pending{background:#edf1f6;color:#475569}
+.dispatched{background:#e0f7fa;color:#0e7490}
+.queued{background:#f3e8ff;color:#6d28d9}
+
+.shared-badge{background:#f0eaff;color:#6d28d9;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.tenant-badge{background:#e0f7fa;color:#0e7490;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.branch-badge{background:#ede9fe;color:#6d28d9;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+.join-badge{background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px;font-size:10px;font-weight:700}
+
+.status-dot{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  margin-right:6px;position:relative;vertical-align:middle;
+}
+.status-dot.green{background:var(--green)}
+.status-dot.blue{background:var(--blue)}
+.status-dot.amber{background:var(--amber)}
+.status-dot.red{background:var(--red)}
+.status-dot.purple{background:var(--purple)}
+.status-dot.green::after,
+.status-dot.blue::after,
+.status-dot.amber::after,
+.status-dot.red::after,
+.status-dot.purple::after{
+  content:"";position:absolute;inset:-3px;border-radius:50%;
+  border:2px solid currentColor;opacity:.4;
+  animation:pulse-ring 1.8s ease-out infinite;
+}
+
+.live-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;
+  background:#e7f8f1;color:#047857;border:1px solid #c6f0e0;
+}
+.live-pill.paused{background:#fff5db;color:#a16207;border-color:#fde68a}
+.live-pill .dot{
+  width:7px;height:7px;border-radius:50%;
+  background:currentColor;animation:pulse 1.5s infinite;
+}
+
+.iterator-chip{
+  background:#7c3aed;color:#fff;font-size:9px;font-weight:800;
+  padding:2px 7px;border-radius:999px;letter-spacing:.05em;
+  white-space:nowrap;flex-shrink:0;
+}
+.branch-chip{
+  background:#ede9fe;color:#6d28d9;font-size:9px;font-weight:800;
+  padding:2px 7px;border-radius:999px;letter-spacing:.05em;
+  white-space:nowrap;flex-shrink:0;
+}
+.join-chip{
+  background:#dbeafe;color:#1e40af;font-size:9px;font-weight:800;
+  padding:2px 7px;border-radius:999px;letter-spacing:.05em;
+  white-space:nowrap;flex-shrink:0;
+}

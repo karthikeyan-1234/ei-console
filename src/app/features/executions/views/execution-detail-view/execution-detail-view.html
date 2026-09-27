@@ -1,0 +1,50 @@
+@if (execution(); as ex) {
+  <div class="cv-head">
+    <div>
+      <h3>Execution · {{ shortId(ex.id) }}</h3>
+      <div class="sub">
+        {{ ex.job }} · {{ tenantLabel() }} · Started {{ ex.started }}{{ ex.hasBranches ? ' · Fork-Join' : '' }}
+      </div>
+    </div>
+    <div class="actions">
+      <ei-status-badge [variant]="statusVariant(ex)" [label]="statusLabel(ex)" />
+      <button class="btn btn-outline btn-sm" (click)="onBack()">← Back</button>
+    </div>
+  </div>
+
+  <ei-execution-tracing-panel [execution]="ex" />
+
+  <div class="kpis" style="margin-bottom:16px">
+    <div class="kpi">
+      <div class="v">{{ itemsLabel() }}</div>
+      <div class="l">Items (scatter only)</div>
+      <div class="progress-bar">
+        <div class="fill" [style.width.%]="progressPct()"></div>
+      </div>
+    </div>
+    <div class="kpi">
+      <div class="v">{{ progressLabel() }}</div>
+      <div class="l">Progress</div>
+    </div>
+    <div class="kpi">
+      <div class="v">{{ fmtHMS(ex.elapsedSec) }}</div>
+      <div class="l">Elapsed</div>
+    </div>
+    <div class="kpi">
+      <div class="v">{{ ex.failures }}</div>
+      <div class="l">Failures</div>
+    </div>
+  </div>
+
+  @if (ex.hasBranches) {
+    <ei-branch-progress-panel [execution]="ex" />
+  }
+
+  <ei-task-log-table [executionId]="ex.id" />
+
+  <ei-scatter-detail-table [executionId]="ex.id" />
+} @else {
+  <div style="padding:32px;text-align:center;color:var(--muted);font-size:13px">
+    Execution not found.
+  </div>
+}
