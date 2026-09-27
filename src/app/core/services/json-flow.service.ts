@@ -141,8 +141,15 @@ export class JsonFlowService {
         }
 
         lastValue = output;
-        lastSourceLabel = t.name || t.type;
-        lastSourceId = t.id;
+        // A Branch shares its input with the pre-fork task and with every
+        // other branch in the same fork run. Its own name must NOT become
+        // the source label for the next sibling branch — otherwise the second
+        // and later lanes would show "input from: <previous branch>" instead
+        // of the actual pre-fork task. Only non-Branch tasks advance the label.
+        if (t.type !== 'Branch') {
+          lastSourceLabel = t.name || t.type;
+          lastSourceId = t.id;
+        }
       }
     };
 

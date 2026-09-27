@@ -23,18 +23,18 @@
     </div>
 
     @if (type() === 'ApiPull' && asApiPull(); as t) {
-      <ei-api-pull-fields [task]="t" />
-    } @else if (type() === 'ApiPush' && asApiPush(); as t) {
-      <ei-api-push-fields [task]="t" />
-    } @else if (type() === 'Transform') {
-      <ei-placeholder-fields [type]="'Transform'" />
-    } @else if (type() === 'Notify') {
-      <ei-placeholder-fields [type]="'Notify'" />
-    } @else if (type() === 'Branch') {
-      <ei-placeholder-fields [type]="'Branch'" />
-    } @else if (type() === 'JoinPoint') {
-      <ei-placeholder-fields [type]="'JoinPoint'" />
-    }
+  <ei-api-pull-fields [task]="t" />
+} @else if (type() === 'ApiPush' && asApiPush(); as t) {
+  <ei-api-push-fields [task]="t" />
+} @else if (type() === 'Transform' && asTransform(); as t) {
+  <ei-transform-fields [task]="t" />
+} @else if (type() === 'Notify' && asNotify(); as t) {
+  <ei-notify-fields [task]="t" />
+} @else if (type() === 'Branch') {
+  <ei-placeholder-fields [type]="'Branch'" />
+} @else if (type() === 'JoinPoint' && asJoinPoint(); as t) {
+  <ei-join-point-fields [task]="t" />
+}
 
     <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
     <button modalFooter class="btn" (click)="onSave()">Save Task</button>

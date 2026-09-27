@@ -13,7 +13,10 @@ import { TaskEditorService } from '../../services/task-editor.service';
 import { ApiPullFieldsComponent } from './fields/api-pull-fields';
 import { ApiPushFieldsComponent } from './fields/api-push-fields';
 import { PlaceholderFieldsComponent } from './fields/placeholder-fields';
+import { TransformFieldsComponent } from './fields/transform-fields';
 
+import { NotifyFieldsComponent } from './fields/notify-fields';
+import { JoinPointFieldsComponent } from './fields/join-point-fields';
 
 @Component({
   selector: 'ei-task-editor',
@@ -21,7 +24,10 @@ import { PlaceholderFieldsComponent } from './fields/placeholder-fields';
     ModalShellComponent,
     ApiPullFieldsComponent,
     ApiPushFieldsComponent,
+    TransformFieldsComponent,
     PlaceholderFieldsComponent,
+    NotifyFieldsComponent,
+    JoinPointFieldsComponent,
   ],
   templateUrl: './task-editor.html',
 })

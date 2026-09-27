@@ -1,0 +1,54 @@
+<div class="callout">
+  <b>Notify</b> — publishes to a Kafka topic or calls an outbound webhook.
+  The body is a JSONata expression evaluated against the incoming payload.
+</div>
+
+<div class="form-grid">
+
+  <div class="form-group full">
+    <label>Medium</label>
+    <select (change)="onMediumChange($any($event.target).value)">
+      <option value="kafka" [selected]="medium() === 'kafka'">Kafka topic</option>
+      <option value="webhook" [selected]="medium() === 'webhook'">Outbound webhook</option>
+    </select>
+  </div>
+
+  @if (medium() === 'kafka') {
+    <div class="form-group full">
+      <label>Kafka Topic</label>
+      <input
+        type="text"
+        style="font-family:var(--mono)"
+        [value]="kafkaTopic()"
+        (input)="onKafkaTopicChange($any($event.target).value)" />
+    </div>
+  } @else {
+    <div class="form-group full">
+      <label>Webhook URL</label>
+      <input
+        type="text"
+        style="font-family:var(--mono)"
+        [value]="url()"
+        (input)="onUrlChange($any($event.target).value)" />
+    </div>
+  }
+
+  <div class="form-group full">
+    <label>Payload (JSONata)</label>
+    <textarea
+      class="editor-pane"
+      rows="3"
+      style="margin-top:4px"
+      [value]="body()"
+      (input)="onBodyChange($any($event.target).value)"></textarea>
+  </div>
+
+  <div class="form-group">
+    <label>Timeout (s)</label>
+    <input
+      type="number"
+      min="1"
+      [value]="timeout()"
+      (input)="onTimeoutChange($any($event.target).value)" />
+  </div>
+</div>

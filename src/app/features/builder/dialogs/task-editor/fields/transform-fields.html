@@ -1,0 +1,95 @@
+<div class="callout purple">
+  <b>Transform is pure JSON → JSON.</b> No connection, no auth, no HTTP.
+  Uses the live upstream by default; tick "isolated sample" to test with your own input.
+</div>
+
+<div class="form-grid">
+  <div class="form-group full">
+    <label>Input source (path or JSONata)</label>
+    <input
+      type="text"
+      style="font-family:var(--mono)"
+      placeholder="e.g. Source.policies or $.policies"
+      [value]="inputSource()"
+      (input)="onInputSourceChange($any($event.target).value)" />
+  </div>
+</div>
+
+<div style="margin-top:12px">
+  <label style="font-size:10.5px;font-weight:700;color:var(--ink2);text-transform:uppercase">
+    JSONata Expression
+  </label>
+  <textarea
+    class="editor-pane"
+    rows="8"
+    style="margin-top:4px"
+    [value]="jsonataText()"
+    (input)="onJsonataChange($any($event.target).value)"></textarea>
+</div>
+
+<div style="margin-top:12px">
+  <label style="font-size:10.5px;font-weight:700;color:var(--ink2);text-transform:uppercase">
+    Isolated sample input (only used when ticked)
+  </label>
+
+  <div class="chk-row">
+    <input
+      type="checkbox"
+      id="taskUseSampleInput"
+      [checked]="useSample()"
+      (change)="onUseSampleChange($any($event.target).checked)" />
+    <label
+      for="taskUseSampleInput"
+      style="text-transform:none;font-weight:600;margin:0;font-size:11.5px">
+      Use this sample instead of live upstream
+    </label>
+  </div>
+
+  <textarea
+    class="editor-pane"
+    rows="5"
+    style="margin-top:4px"
+    [value]="sampleInputText()"
+    (input)="onSampleInputChange($any($event.target).value)"></textarea>
+</div>
+
+<div style="margin-top:12px;display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+  <button type="button" class="btn" (click)="onRunTest()">▶ Test with sample</button>
+  <span style="font-size:11px;color:var(--muted)">{{ diagnostic() }}</span>
+</div>
+
+<div style="margin-top:10px">
+  <label style="font-size:10.5px;font-weight:700;color:var(--ink2);text-transform:uppercase">
+    Output Preview
+  </label>
+
+  @switch (preview().kind) {
+    @case ('idle') {
+      <pre class="preview-pane" style="margin-top:4px">—</pre>
+    }
+    @case ('error') {
+      <pre class="preview-pane error" style="margin-top:4px">{{ $any(preview()).text }}</pre>
+    }
+    @case ('success') {
+      <pre class="preview-pane success" style="margin-top:4px">{{ $any(preview()).text }}</pre>
+    }
+  }
+</div>
+
+<div class="iterate-block" style="margin-top:14px">
+  <input
+    type="checkbox"
+    id="taskIterate"
+    [checked]="iterate()"
+    (click)="onIterateToggle($event)" />
+  <div class="ib-body">
+    <div class="ib-title">🔀 Iterate output → Scatter-Gather fan-out</div>
+    <div class="ib-desc">
+      Sub-tasks run once per element. Bounded by the Redis token bucket.
+      @if (subtaskCount() > 0) {
+        <br>
+        <b>{{ subtaskCount() }}</b> sub-task{{ subtaskCount() === 1 ? '' : 's' }} defined.
+      }
+    </div>
+  </div>
+</div>
