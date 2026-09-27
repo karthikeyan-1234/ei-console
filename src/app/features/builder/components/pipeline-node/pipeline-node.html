@@ -3,8 +3,12 @@
   [class.draggable]="isDraggable()"
   [class.dragging]="isDragging()"
   [attr.draggable]="isDraggable() ? 'true' : null"
+  [attr.data-task-id]="task().id"
   (dragstart)="onDragStart($event)"
-  (dragend)="onDragEnd()">
+  (dragend)="onDragEnd()"
+  (mouseover)="onHoverStart($event)"
+  (mousemove)="onHoverMove($event)"
+  (mouseout)="onHoverEnd($event)">
 
   <div class="pn-head">
     <div class="pn-icon">{{ icon() }}</div>

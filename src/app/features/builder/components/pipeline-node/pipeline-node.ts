@@ -13,6 +13,9 @@ import { ConnectionService } from '../../../../core/services/connection.service'
 
 import { DragKind, DragStateService } from '../../../../shared/services/drag-state.service';
 
+import { JsonFlowService } from '../../../../core/services/json-flow.service';
+import { JsonOverlayService } from '../../../../shared/services/json-overlay.service';
+
 @Component({
   selector: 'ei-pipeline-node',
   imports: [],
@@ -21,6 +24,9 @@ import { DragKind, DragStateService } from '../../../../shared/services/drag-sta
 export class PipelineNodeComponent {
   private readonly connections = inject(ConnectionService);
   private readonly dragState = inject(DragStateService);
+
+  private readonly jsonFlow = inject(JsonFlowService);
+private readonly jsonOverlay = inject(JsonOverlayService);
 
   readonly task = input.required<PipelineTask>();
 
@@ -227,5 +233,56 @@ onDragStart(event: DragEvent): void {
 
 onDragEnd(): void {
   this.dragState.end();
+}
+
+/**
+ * Fires when the cursor enters any element with a `data-task-id` inside
+ * this node. That includes the node's own card and, for iterator transforms,
+ * each sub-task row inside the card. The closest match wins, so hovering a
+ * sub-task row shows the sub-task's flow, not the parent transform's.
+ */
+onHoverStart(event: MouseEvent): void {
+  const el = (event.target as HTMLElement | null)?.closest('[data-task-id]');
+  if (!el) return;
+
+  const id = el.getAttribute('data-task-id');
+  if (!id) return;
+
+  const flow = this.jsonFlow.flowFor(id);
+  if (!flow) return;
+
+  // Position before showing so the overlay appears at the cursor, not at
+  // wherever it was left after the previous hover.
+  this.jsonOverlay.moveTo(event.clientX, event.clientY);
+  this.jsonOverlay.show(flow);
+}
+
+/** Tracks the cursor while the overlay is visible. */
+onHoverMove(event: MouseEvent): void {
+  if (!this.jsonOverlay.visible()) return;
+  this.jsonOverlay.moveTo(event.clientX, event.clientY);
+}
+
+/**
+ * Hides the overlay when the cursor truly leaves the hovered task. Two
+ * cases keep it open:
+ *   1. The cursor moved into a descendant of the same task — e.g. onto one
+ *      of the node's action buttons. `el.contains(related)` catches this.
+ *   2. The cursor moved onto the overlay itself, so the ✕ stays clickable.
+ *      We test `related.closest('.json-overlay')` for this.
+ * Any other destination hides the overlay. Moving from one task to another
+ * triggers this handler, then the destination task's `mouseover` fires and
+ * re-shows the overlay with the new flow in the same frame.
+ */
+onHoverEnd(event: MouseEvent): void {
+  const el = (event.target as HTMLElement | null)?.closest('[data-task-id]');
+  if (!el) return;
+
+  const related = event.relatedTarget;
+
+  if (related instanceof Node && el.contains(related)) return;
+  if (related instanceof HTMLElement && related.closest('.json-overlay')) return;
+
+  this.jsonOverlay.hide();
 }
 }

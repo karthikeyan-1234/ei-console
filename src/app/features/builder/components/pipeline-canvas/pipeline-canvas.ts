@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   ElementRef,
   computed,
   effect,
@@ -10,8 +11,10 @@ import {
 import { Job, PipelineBlock, PipelineTask } from '../../../../core/models';
 import { groupPipelineIntoBlocks } from '../../../../core/utils/pipeline.util';
 import { JobService } from '../../../../core/services/job.service';
+import { JsonFlowService } from '../../../../core/services/json-flow.service';
 import { ToastService } from '../../../../core/services/toast.service';
 import { DragStateService } from '../../../../shared/services/drag-state.service';
+import { JsonOverlayService } from '../../../../shared/services/json-overlay.service';
 import { PipelineNodeComponent } from '../pipeline-node/pipeline-node';
 import { ForkBlockComponent } from '../fork-block/fork-block';
 
@@ -24,6 +27,9 @@ export class PipelineCanvasComponent {
   private readonly dragState = inject(DragStateService);
   private readonly jobs = inject(JobService);
   private readonly toasts = inject(ToastService);
+  private readonly jsonFlow = inject(JsonFlowService);
+  private readonly jsonOverlay = inject(JsonOverlayService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly job = input.required<Job>();
 
@@ -40,6 +46,14 @@ export class PipelineCanvasComponent {
   readonly treeRef = viewChild<ElementRef<HTMLElement>>('pipelineTree');
 
   constructor() {
+    // Recompute the JSON flow whenever the selected job changes, and hide
+    // any visible hover overlay while we swap jobs.
+    effect(() => {
+      const j = this.job();
+      this.jsonOverlay.hide();
+      this.jsonFlow.recompute(j);
+    });
+
     // Attach a window-level dragover listener only while a drag is active.
     // HTML5 DnD fires dragover continuously during a drag but suppresses
     // mousemove on the source, so this is the only place we can read the
@@ -51,6 +65,15 @@ export class PipelineCanvasComponent {
       window.addEventListener('dragover', handler, true);
       onCleanup(() => window.removeEventListener('dragover', handler, true));
     });
+
+    // Hide the hover overlay the moment a drag begins — the overlay would
+    // otherwise hang in place following neither the cursor nor the drag.
+    effect(() => {
+      if (this.dragState.active()) this.jsonOverlay.hide();
+    });
+
+    // Hide the overlay if the canvas unmounts (route change, job deletion).
+    this.destroyRef.onDestroy(() => this.jsonOverlay.hide());
   }
 
   private handleGlobalDragOver(event: DragEvent): void {
