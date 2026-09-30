@@ -40,6 +40,22 @@ export class TaskEditorService {
     this.modal.open('modalTask');
   }
 
+  /**
+ * Opens the editor for a task identified by its path. Used after an Add
+ * operation, when the object the caller just inserted has been replaced by
+ * a deep clone in the store — so reference-based lookup would fail.
+ */
+openForPath(jobId: number, path: TaskEditorPath, isNew = false): void {
+  const job = this.jobs.byId(jobId);
+  if (!job) return;
+
+  const task = this.resolveTask(job, path);
+  if (!task) return;
+
+  this._context.set({ jobId, path, task, isNew });
+  this.modal.open('modalTask');
+}
+
   /** Called on Save. Forces a signal update so downstream views see the mutated task. */
   save(): void {
     const ctx = this._context();
@@ -84,6 +100,20 @@ export class TaskEditorService {
     }
     return null;
   }
+
+  private resolveTask(job: Job, path: TaskEditorPath): EditorTask | null {
+  if (path.level === 'top') {
+    return job.pipeline[path.topIdx] ?? null;
+  }
+  if (path.level === 'sub') {
+    const parent = job.pipeline[path.topIdx];
+    if (!parent || parent.type !== 'Transform') return null;
+    return parent.subtasks?.[path.subIdx] ?? null;
+  }
+  const parent = job.pipeline[path.topIdx];
+  if (!parent || parent.type !== 'Branch') return null;
+  return parent.children?.[path.childIdx] ?? null;
+}
 
   private forceUpdate(jobId: number): void {
     const job = this.jobs.byId(jobId);
