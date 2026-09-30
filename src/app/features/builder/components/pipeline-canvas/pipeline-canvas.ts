@@ -18,6 +18,7 @@ import { JsonOverlayService } from '../../../../shared/services/json-overlay.ser
 import { PipelineNodeComponent } from '../pipeline-node/pipeline-node';
 import { ForkBlockComponent } from '../fork-block/fork-block';
 import { ChildDropEvent } from '../branch-lane/branch-lane';
+import { InsertPointService } from '../../services/insert-point.service';
 
 @Component({
   selector: 'ei-pipeline-canvas',
@@ -31,20 +32,18 @@ export class PipelineCanvasComponent {
   private readonly jsonFlow = inject(JsonFlowService);
   private readonly jsonOverlay = inject(JsonOverlayService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly insertPoint = inject(InsertPointService);
 
   readonly job = input.required<Job>();
 
   readonly pipeline = computed<PipelineTask[]>(() => this.job().pipeline);
-
   readonly blocks = computed<PipelineBlock[]>(() =>
     groupPipelineIntoBlocks(this.pipeline()),
   );
-
   readonly lastSlotIdx = computed(() => this.blocks().length);
-
   readonly dropTargetsVisible = this.dragState.dropTargetsVisible;
-
   readonly treeRef = viewChild<ElementRef<HTMLElement>>('pipelineTree');
+  readonly arrowIdx = this.insertPoint.arrowIdx;
 
 constructor() {
   // Recompute the JSON flow whenever the selected job changes, and hide
@@ -148,6 +147,10 @@ constructor() {
     // if Angular has already re-rendered and destroyed the source.
     this.dragState.end();
   }
+
+  onArrowClick(idx: number): void {
+  this.insertPoint.toggle(idx);
+}
 
   private applyTopLevelMove(sourceIdx: number, slotIdx: number): void {
     const job = this.job();

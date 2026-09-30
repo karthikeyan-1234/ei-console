@@ -3,12 +3,15 @@ import {
   BranchChildTask,
   BranchTask,
   Job,
+  JoinPointTask,
+  PipelineTask,
   SubTask,
   TransformTask,
 } from '../../../core/models';
 import { JobService } from '../../../core/services/job.service';
 import { ToastService } from '../../../core/services/toast.service';
 import { uid } from '../../../core/utils/string.util';
+import { groupPipelineIntoBlocks } from '../../../core/utils/pipeline.util';
 import { TaskEditorService } from './task-editor.service';
 
 export type NodePath =
@@ -224,6 +227,126 @@ export class PipelineMutationService {
     await this.jobs.update(jobId, { pipeline });
     this.toasts.warn('Fork removed');
   }
+
+
+  // -----------------------------------------------------------------------
+// Add — top-level task, fork, and await, at the selected insert point
+// -----------------------------------------------------------------------
+
+/**
+ * Inserts a new empty ApiPull at the selected arrow, or at the end of the
+ * pipeline if no arrow is selected. Opens the editor for it. If the user
+ * cancels, TaskEditorService.spliceOut removes it again.
+ */
+async addTaskAtArrow(jobId: number, arrowIdx: number | null): Promise<void> {
+  const job = this.jobs.byId(jobId);
+  if (!job) return;
+
+  const insertAt = this.resolveInsertAt(job, arrowIdx);
+
+  const newTask: PipelineTask = {
+    id: uid('t'),
+    type: 'ApiPull',
+    name: 'New task',
+    connectionId: '',
+    url: '',
+    method: 'GET',
+    timeout: 30,
+    outputKey: 'Source',
+    sampleResponse: '{"items":[]}',
+  };
+
+  const pipeline = [...job.pipeline];
+  pipeline.splice(insertAt, 0, newTask);
+
+  await this.jobs.update(jobId, { pipeline });
+
+  this.editor.openForPath(jobId, { level: 'top', topIdx: insertAt }, true);
+}
+
+/**
+ * Inserts a new JoinPoint at the selected arrow, or at the end of the
+ * pipeline if no arrow is selected. Opens the editor for it.
+ */
+async addAwaitAtArrow(jobId: number, arrowIdx: number | null): Promise<void> {
+  const job = this.jobs.byId(jobId);
+  if (!job) return;
+
+  const insertAt = this.resolveInsertAt(job, arrowIdx);
+
+  const newJoin: JoinPointTask = {
+    id: uid('t'),
+    type: 'JoinPoint',
+    name: 'Await all branches',
+    joinMode: 'WaitAll',
+    joinThreshold: 1,
+    joinTimeoutSeconds: 600,
+    joinTimeoutAction: 'Fail',
+  };
+
+  const pipeline = [...job.pipeline];
+  pipeline.splice(insertAt, 0, newJoin);
+
+  await this.jobs.update(jobId, { pipeline });
+
+  this.editor.openForPath(jobId, { level: 'top', topIdx: insertAt }, true);
+}
+
+/**
+ * Inserts two consecutive Branch tasks at the selected arrow, forming a fork.
+ *
+ * Unlike `addTask` and `addAwait`, this does not open the editor. Doing so
+ * would require the "new" rollback to remove both branches in a single
+ * cancel — otherwise the second branch would be orphaned. Since a fork
+ * with two default branches is already a valid, well-formed structure,
+ * the user can configure them by clicking Edit on either lane.
+ */
+async addForkAtArrow(jobId: number, arrowIdx: number | null): Promise<void> {
+  const job = this.jobs.byId(jobId);
+  if (!job) return;
+
+  const insertAt = this.resolveInsertAt(job, arrowIdx);
+
+  const branchA: BranchTask = {
+    id: uid('t'),
+    type: 'Branch',
+    name: 'Branch A',
+    condition: 'true',
+    executionMode: 'Sequential',
+    children: [],
+  };
+  const branchB: BranchTask = {
+    id: uid('t'),
+    type: 'Branch',
+    name: 'Branch B',
+    condition: 'true',
+    executionMode: 'Sequential',
+    children: [],
+  };
+
+  const pipeline = [...job.pipeline];
+  pipeline.splice(insertAt, 0, branchA, branchB);
+
+  await this.jobs.update(jobId, { pipeline });
+
+  this.toasts.success('Fork added — two empty branches are ready');
+}
+
+/**
+ * Maps a selected arrow index to a pipeline array position.
+ *
+ * Arrow N sits between block N and block N+1, so the insertion point is
+ * `blocks[N].endIdx + 1`. When `arrowIdx` is null or out of range, the
+ * insertion point is the end of the pipeline.
+ */
+private resolveInsertAt(job: Job, arrowIdx: number | null): number {
+  if (arrowIdx === null) return job.pipeline.length;
+
+  const blocks = groupPipelineIntoBlocks(job.pipeline);
+  if (arrowIdx < 0 || arrowIdx >= blocks.length) return job.pipeline.length;
+
+  return blocks[arrowIdx].endIdx + 1;
+}
 
   // -----------------------------------------------------------------------
   // Helpers

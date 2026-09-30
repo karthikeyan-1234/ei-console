@@ -98,3 +98,13 @@
 .toast.success{border-left-color:var(--green)}
 .toast.warn{border-left-color:var(--amber)}
 .toast.error{border-left-color:var(--red)}
+
+/* Back link rendered above the modal title when a modal is a drill-down. */
+.modal-back{
+  display:inline-flex;align-items:center;gap:4px;
+  background:transparent;border:none;padding:0 0 4px 0;
+  color:var(--blue);font-size:11px;font-weight:700;
+  cursor:pointer;transition:.15s;
+  font-family:inherit;
+}
+.modal-back:hover{color:#1d4ed8;text-decoration:underline}

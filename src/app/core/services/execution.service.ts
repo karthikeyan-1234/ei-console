@@ -22,6 +22,25 @@ export class ExecutionService {
     this._executions().find(e => e.id === this._selectedId()) ?? null,
   );
 
+  /**
+ * The number of executions currently in the Running state across every
+ * tenant in scope. Drives the sidebar badge on the Executions menu item.
+ */
+readonly runningCount = computed(
+  () => this._executions().filter(e => e.status === 'Running').length,
+);
+
+/**
+ * Returns the first running execution for a given job id, or undefined
+ * when that job has no in-flight run. Used by the builder's job list and
+ * header to show live state for the selected job.
+ */
+runningForJob(jobId: number): Execution | undefined {
+  return this._executions().find(
+    e => e.jobId === jobId && e.status === 'Running',
+  );
+}
+
   async load(): Promise<void> {
     this._executions.set(await this.api.list());
   }

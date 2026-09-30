@@ -10,20 +10,6 @@
 
     <div class="console-brand">EI <span>Management Console</span></div>
 
-    <div class="demo-controls">
-      <button
-        class="btn-demo"
-        [class.primary]="startButtonPrimary()"
-        (click)="onToggleDemo()">
-        {{ startButtonLabel() }}
-      </button>
-      <button class="btn-demo" (click)="onReset()">↺ Reset</button>
-      <span class="live-pill" [class.paused]="livePillPaused()">
-        <span class="dot"></span>
-        <span>{{ livePillText() }}</span>
-      </span>
-    </div>
-
     <div class="tenant-selector">
       <span style="color:var(--cyan);font-size:13px">🏢</span>
       <span class="ts-label">Tenant</span>

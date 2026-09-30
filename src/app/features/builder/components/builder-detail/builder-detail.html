@@ -7,14 +7,22 @@
           <span style="font-size:12px;font-weight:700;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:6px">
             {{ versionLabel() }}
           </span>
+          @if (runningExecution(); as run) {
+            <span
+              style="font-size:11px;font-weight:700;background:#e5f2ff;color:#1d4ed8;padding:2px 8px;border-radius:6px;margin-left:6px;font-family:var(--mono)"
+              [title]="'Execution ' + run.id + ' · ' + run.workerInstance">
+              <span class="status-dot blue" style="margin-right:4px"></span>
+              RUNNING · {{ runningElapsedLabel() }}
+            </span>
+          }
         </div>
         <div class="bd-sub">{{ j.slug }} · {{ tenantLabel() }}</div>
       </div>
 
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" disabled style="opacity:.5">Validate</button>
-        <button class="btn btn-sm" disabled style="opacity:.5">
-          Publish v{{ (j.version || 0) + 1 }}
+        <button class="btn btn-outline btn-sm" (click)="onValidate()">Validate</button>
+        <button class="btn btn-sm" (click)="onPublish()">
+          {{ publishVersionLabel() }}
         </button>
       </div>
     </div>
@@ -42,12 +50,47 @@
       </div>
     </div>
 
+    @if (validation(); as v) {
+      @if (v.errors.length) {
+        <div class="callout danger">
+          <b>{{ v.errors.length }} issue{{ v.errors.length === 1 ? '' : 's' }} to fix before publishing</b>
+          <ul style="margin:6px 0 0 18px">
+            @for (e of v.errors; track e) {
+              <li>{{ e }}</li>
+            }
+          </ul>
+        </div>
+      } @else {
+        <div class="callout good">
+          <b>Validation passed.</b> Publishing creates an immutable snapshot as
+          v{{ (j.version || 0) + 1 }}.
+        </div>
+      }
+    }
+
+    @if (arrowSelected()) {
+      <div class="callout good" style="margin-top:0">
+        <b>Arrow selected.</b> Click <b>+ Add task</b>, <b>⑂ Add fork</b>, or
+        <b>⊧ Add await</b> to insert right after the highlighted connector.
+        <button
+          class="btn btn-outline btn-xs"
+          style="margin-left:8px"
+          (click)="onClearArrow()">Clear selection</button>
+      </div>
+    }
+
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
       <div style="font-weight:800;font-size:13px;color:var(--ink)">Pipeline</div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" disabled style="opacity:.5">⑂ Add fork</button>
-        <button class="btn btn-outline btn-sm" disabled style="opacity:.5">⊧ Add await</button>
-        <button class="btn btn-sm" disabled style="opacity:.5">+ Add task</button>
+        <button
+          class="btn btn-outline btn-sm"
+          style="color:#7c3aed;border-color:#c4b5fd"
+          (click)="onAddFork()">⑂ Add fork</button>
+        <button
+          class="btn btn-outline btn-sm"
+          style="color:#1e40af;border-color:#93c5fd"
+          (click)="onAddAwait()">⊧ Add await</button>
+        <button class="btn btn-sm" (click)="onAddTask()">+ Add task</button>
       </div>
     </div>
 

@@ -7,6 +7,9 @@
 
   <a class="side-item" routerLink="/console/executions" routerLinkActive="active">
     <span class="si-ico">▶</span> Executions
+    @if (runningExecutions() > 0) {
+      <span class="si-badge">{{ runningExecutions() }}</span>
+    }
   </a>
 
   <a class="side-item" routerLink="/console/scatter" routerLinkActive="active">
@@ -41,10 +44,10 @@
     <span class="si-ico">⏱</span> Rate Limits
   </a>
 
-<div class="side-item side-item--disabled" aria-disabled="true">
-  <span class="si-ico">💧</span> Watermarks
-  <span class="side-tooltip">Feature not implemented yet</span>
-</div>
+  <div class="side-item side-item--disabled" aria-disabled="true">
+    <span class="si-ico">💧</span> Watermarks
+    <span class="side-tooltip">Feature not implemented yet</span>
+  </div>
 
   <div class="side-section">Build</div>
 

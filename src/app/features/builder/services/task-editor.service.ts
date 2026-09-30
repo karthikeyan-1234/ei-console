@@ -26,19 +26,39 @@ export class TaskEditorService {
 
   private readonly _context = signal<TaskEditorContext | null>(null);
   readonly context = this._context.asReadonly();
+  private readonly _stack = signal<TaskEditorContext[]>([]);
+
+  /** True when a drill-down has occurred and a Back button should be shown. */
+  readonly canGoBack = computed(() => this._stack().length > 0);
   readonly isOpen = computed(() => this._context() !== null);
 
+  /** The parent task's name, used as the Back button's label. */
+  readonly parentTaskName = computed(() => {
+    const stack = this._stack();
+    if (!stack.length) return '';
+    const parent = stack[stack.length - 1];
+    return parent.task.name || parent.task.type;
+  });
+
   /** Opens the editor for a task already present in the job's pipeline. */
-  openForTask(jobId: number, task: EditorTask, isNew = false): void {
-    const job = this.jobs.byId(jobId);
-    if (!job) return;
+openForTask(jobId: number, task: EditorTask, isNew = false): void {
+  const job = this.jobs.byId(jobId);
+  if (!job) return;
 
-    const path = this.findPath(job, task);
-    if (!path) return;
+  const path = this.findPath(job, task);
+  if (!path) return;
 
-    this._context.set({ jobId, path, task, isNew });
-    this.modal.open('modalTask');
+  // If an editor is already open, this call is a drill-down (e.g., clicking
+  // Edit on a branch child from inside the branch's editor). Push the current
+  // context so the Back button can return to it.
+  const current = this._context();
+  if (current) {
+    this._stack.update(s => [...s, current]);
   }
+
+  this._context.set({ jobId, path, task, isNew });
+  this.modal.open('modalTask');
+}
 
   /**
  * Opens the editor for a task identified by its path. Used after an Add
@@ -52,28 +72,49 @@ openForPath(jobId: number, path: TaskEditorPath, isNew = false): void {
   const task = this.resolveTask(job, path);
   if (!task) return;
 
+  const current = this._context();
+  if (current) {
+    this._stack.update(s => [...s, current]);
+  }
+
   this._context.set({ jobId, path, task, isNew });
   this.modal.open('modalTask');
 }
 
+/**
+ * Pops the last context off the stack and restores it, without closing the
+ * modal. Used by the Back button when the user drilled into a child from
+ * a parent editor. No-op when the stack is empty.
+ */
+back(): void {
+  const stack = this._stack();
+  if (!stack.length) return;
+
+  const parent = stack[stack.length - 1];
+  this._stack.set(stack.slice(0, -1));
+  this._context.set(parent);
+}
+
   /** Called on Save. Forces a signal update so downstream views see the mutated task. */
-  save(): void {
-    const ctx = this._context();
-    if (!ctx) return;
-    this.forceUpdate(ctx.jobId);
-    this._context.set(null);
-    this.modal.close();
-  }
+save(): void {
+  const ctx = this._context();
+  if (!ctx) return;
+  this.forceUpdate(ctx.jobId);
+  this._context.set(null);
+  this._stack.set([]);
+  this.modal.close();
+}
 
   /** Called on Cancel. For a new task, removes it from the pipeline. */
-  cancel(): void {
-    const ctx = this._context();
-    if (ctx?.isNew) {
-      this.spliceOut(ctx);
-    }
-    this._context.set(null);
-    this.modal.close();
+cancel(): void {
+  const ctx = this._context();
+  if (ctx?.isNew) {
+    this.spliceOut(ctx);
   }
+  this._context.set(null);
+  this._stack.set([]);
+  this.modal.close();
+}
 
   /**
    * Locates the task within the job's pipeline by reference. Uses referential
