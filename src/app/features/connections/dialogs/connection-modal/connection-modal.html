@@ -27,22 +27,24 @@
 
     <div class="form-group">
       <label>Protocol</label>
-      <select
-        [value]="protocol()"
-        (change)="onProtocolInput($any($event.target).value)">
-        <option value="Rest">Rest</option>
-        <option value="Soap">Soap</option>
-        <option value="Json">Json</option>
+      <select (change)="onProtocolInput($any($event.target).value)">
+        <option value="Rest"     [selected]="protocol() === 'Rest'">Rest</option>
+        <option value="Soap"     [selected]="protocol() === 'Soap'">Soap</option>
+        <option value="Json"     [selected]="protocol() === 'Json'">Json</option>
+        <option value="SqlServer" [selected]="protocol() === 'SqlServer'">SQL Server</option>
       </select>
     </div>
 
     <div class="form-group full">
-      <label>Base URL</label>
+      <label>{{ baseUrlLabel() }}</label>
       <input
         type="text"
         style="font-family:var(--mono)"
         [value]="baseUrl()"
         (input)="onBaseUrlInput($any($event.target).value)" />
+      @if (baseUrlHint()) {
+        <div class="hint">{{ baseUrlHint() }}</div>
+      }
     </div>
 
     <div class="form-group">
@@ -56,30 +58,32 @@
 
     <div class="form-group">
       <label>Default Auth Profile</label>
-        <select (change)="onAuthInput($any($event.target).value)">
-          <option value="" [selected]="authProfile() === ''">— None —</option>
-          @for (a of authOptions(); track a.id) {
-            <option [value]="a.id" [selected]="a.id === authProfile()">{{ a.name }}</option>
-          }
-        </select>
+      <select (change)="onAuthInput($any($event.target).value)">
+        <option value="" [selected]="authProfile() === ''">— None —</option>
+        @for (a of authOptions(); track a.id) {
+          <option [value]="a.id" [selected]="a.id === authProfile()">{{ a.name }}</option>
+        }
+      </select>
     </div>
 
     <div class="form-group">
-      <label>Timeout (ms)</label>
+      <label>{{ isSqlServer() ? 'Query Timeout (seconds)' : 'Timeout (ms)' }}</label>
       <input
         type="number"
-        [value]="timeout()"
+        [value]="isSqlServer() ? timeout() : timeout()"
         (input)="onTimeoutInput($any($event.target).value)" />
     </div>
 
-    <div class="form-group full">
-      <label>Default Headers (JSON)</label>
-      <textarea
-        rows="2"
-        style="font-family:var(--mono)"
-        [value]="headers()"
-        (input)="onHeadersInput($any($event.target).value)"></textarea>
-    </div>
+    @if (!isSqlServer()) {
+      <div class="form-group full">
+        <label>Default Headers (JSON)</label>
+        <textarea
+          rows="2"
+          style="font-family:var(--mono)"
+          [value]="headers()"
+          (input)="onHeadersInput($any($event.target).value)"></textarea>
+      </div>
+    }
   </div>
 
   <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>

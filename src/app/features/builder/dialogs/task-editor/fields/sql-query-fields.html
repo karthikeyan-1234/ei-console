@@ -1,0 +1,104 @@
+<div class="callout" style="background:#eff6ff;border-color:#60a5fa">
+  <b>SQL Query</b> — executes a T-SQL statement against the selected SQL Server connection.
+  The result set becomes a JSON array of rows in the pipeline context under <code>outputKey</code>.
+  Credentials are resolved from the connection's auth profile.
+</div>
+
+<div class="form-grid">
+
+  <div class="form-group full">
+    <label>SQL Server Connection</label>
+    <select (change)="onConnectionChange($any($event.target).value)">
+      <option value="" [selected]="!task().connectionId">— Select —</option>
+      @for (c of connectionOptions(); track c.id) {
+        <option [value]="c.id" [selected]="c.id === task().connectionId">
+          {{ c.name }} · {{ c.provider }}
+        </option>
+      }
+    </select>
+    @if (connectionOptions().length === 0) {
+      <div class="hint" style="color:#b91c1c">
+        No SQL Server connections available. Create one in the Connections view first.
+      </div>
+    }
+  </div>
+
+  <div class="form-group full">
+    <label>Auth Profile (override)</label>
+    <select (change)="onAuthChange($any($event.target).value)">
+      <option value="" [selected]="!task().authId">— Connection default —</option>
+      @for (a of authOptions(); track a.id) {
+        <option [value]="a.id" [selected]="a.id === task().authId">{{ a.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group full">
+    <label>T-SQL Query</label>
+    <textarea
+      class="editor-pane"
+      rows="6"
+      style="margin-top:4px"
+      placeholder="SELECT * FROM MyTable WHERE ..."
+      [value]="queryText()"
+      (input)="onQueryChange($any($event.target).value)"></textarea>
+    <div class="hint">
+      Row-returning queries only. Stored procedures that return result sets are also supported.
+    </div>
+  </div>
+
+  <div class="form-group">
+    <label>Query Timeout (seconds)</label>
+    <input
+      type="number"
+      min="1"
+      [value]="timeoutValue()"
+      (input)="onTimeoutChange($any($event.target).value)" />
+  </div>
+
+  <div class="form-group">
+    <label>Store output as key</label>
+    <input
+      type="text"
+      style="font-family:var(--mono)"
+      [value]="outputKey()"
+      (input)="onOutputKeyChange($any($event.target).value)" />
+  </div>
+
+  <div class="form-group full">
+    <label>
+      Sample result set (JSON array)
+      <span class="hint" style="text-transform:none;font-weight:500">
+        — used by the demo until the backend executes the real query
+      </span>
+    </label>
+    <textarea
+      class="editor-pane"
+      rows="8"
+      style="margin-top:4px"
+      [value]="sampleResponseText()"
+      (input)="onSampleResponseChange($any($event.target).value)"></textarea>
+  </div>
+
+  <div class="form-group full" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+    <button type="button" class="btn" (click)="onPreviewSample()">▶ Preview sample</button>
+    <span style="font-size:11px;color:var(--muted)">
+      Real execution will run when the .NET backend is wired.
+    </span>
+  </div>
+
+  <div class="form-group full">
+    <label>Output Preview</label>
+    @switch (previewStatus()) {
+      @case ('idle') {
+        <pre class="preview-pane" style="margin-top:4px">{{ preview() }}</pre>
+      }
+      @case ('error') {
+        <pre class="preview-pane error" style="margin-top:4px">{{ preview() }}</pre>
+      }
+      @case ('ok') {
+        <pre class="preview-pane success" style="margin-top:4px">{{ preview() }}</pre>
+      }
+    }
+  </div>
+</div>

@@ -24,6 +24,8 @@
 
    @if (type() === 'ApiPull' && asApiPull(); as t) {
   <ei-api-pull-fields [task]="t" />
+} @else if (type() === 'SqlQuery' && asSqlQuery(); as t) {
+  <ei-sql-query-fields [task]="t" />
 } @else if (type() === 'ApiPush' && asApiPush(); as t) {
   <ei-api-push-fields [task]="t" />
 } @else if (type() === 'Transform' && asTransform(); as t) {

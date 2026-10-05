@@ -38,14 +38,20 @@ export class JsonFlowService {
     let lastSourceId: string | null = null;
 
     const runNode = (node: PipelineTask, input: unknown): unknown => {
-      if (node.type === 'ApiPull') {
+      if (node.type === 'ApiPull' || node.type === 'SqlQuery') {
         let resp = safeJsonParse<unknown>(node.sampleResponse, null);
         if (resp == null) {
-          resp = {
-            _note: 'Provide sampleResponse on this API Pull',
-            endpoint: node.url || '',
-            items: [],
-          };
+          resp = node.type === 'SqlQuery'
+            ? {
+                _note: 'Provide sampleResponse on this SqlQuery task',
+                query: node.query || '',
+                rows: [],
+              }
+            : {
+                _note: 'Provide sampleResponse on this API Pull',
+                endpoint: node.url || '',
+                items: [],
+              };
         }
         if (node.outputKey) context[node.outputKey] = resp;
         return resp;

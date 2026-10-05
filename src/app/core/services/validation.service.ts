@@ -30,6 +30,19 @@ export class ValidationService {
           if (!t.url) errors.push(`${where}: endpoint path is empty.`);
           break;
         }
+                case 'SqlQuery': {
+          checkConn(t, where);
+          if (!t.query || !t.query.trim()) {
+            errors.push(`${where}: SQL query is empty.`);
+          }
+          if (t.connectionId) {
+            const conn = this.connections.byId(t.connectionId);
+            if (conn && conn.protocol !== 'SqlServer') {
+              errors.push(`${where}: the selected connection is not a SQL Server connection.`);
+            }
+          }
+          break;
+        }
         case 'Transform': {
           if (!t.jsonata || !t.jsonata.trim()) {
             errors.push(`${where}: JSONata expression is empty.`);

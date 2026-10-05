@@ -17,15 +17,16 @@
       [value]="search()"
       (input)="onSearchInput($any($event.target).value)" />
 
-    <select
-      class="input"
-      [value]="protocolFilter()"
-      (change)="onProtocolInput($any($event.target).value)">
-      <option value="">All protocols</option>
-      <option value="Rest">Rest</option>
-      <option value="Soap">Soap</option>
-      <option value="Json">Json</option>
-    </select>
+<select
+  class="input"
+  [value]="protocolFilter()"
+  (change)="onProtocolInput($any($event.target).value)">
+  <option value="">All protocols</option>
+  <option value="Rest">Rest</option>
+  <option value="Soap">Soap</option>
+  <option value="Json">Json</option>
+  <option value="SqlServer">SQL Server</option>
+</select>
   </div>
 </div>
 

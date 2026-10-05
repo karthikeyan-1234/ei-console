@@ -1,6 +1,6 @@
 <div class="ccard">
   <div class="cc-head">
-    <div class="cc-title">🔌 {{ connection().name }}</div>
+    <div class="cc-title">{{ icon() }} {{ connection().name }}</div>
     @if (isShared()) {
       <span class="shared-badge">Shared</span>
     }
@@ -10,13 +10,23 @@
     <div><b>Provider:</b> {{ connection().provider }}</div>
     <div><b>Protocol:</b> {{ connection().protocol }}</div>
     <div>
-      <b>URL:</b>
-      <code style="font-family:var(--mono);font-size:10.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px">
+      <b>{{ urlLabel() }}:</b>
+      <code style="font-family:var(--mono);font-size:10.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px;word-break:break-all">
         {{ connection().baseUrl }}
       </code>
     </div>
-    <div><b>Auth:</b> {{ authName() }}</div>
-    <div><b>Timeout:</b> {{ connection().timeout || 30000 }} ms</div>
+    <div>
+      <b>Auth:</b> {{ authName() }}
+      @if (hasInlineCredentials()) {
+        <span
+          class="shared-badge"
+          style="background:#fee2e2;color:#991b1b;margin-left:6px"
+          title="This connection's auth profile stores credentials inline">
+          🔓 Inline
+        </span>
+      }
+    </div>
+    <div><b>Timeout:</b> {{ connection().timeout || 30 }}{{ isSqlServer() ? ' s' : ' ms' }}</div>
   </div>
 
   <div class="cc-actions">

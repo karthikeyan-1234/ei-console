@@ -19,14 +19,25 @@
 
     <div class="form-group full">
       <label>Auth Type</label>
-      <select
-        [value]="type()"
-        (change)="onTypeInput($any($event.target).value)">
-        <option value="KeycloakAuthCodeExchange">Keycloak OAuth2 Authorization Code + Token Exchange (RFC 8693)</option>
-        <option value="OAuth2ClientCredentials">OAuth2 Client Credentials</option>
-        <option value="ApiKey">API Key</option>
-        <option value="WsSecurityUsernameToken">WS-Security UsernameToken</option>
-        <option value="MutualTls">Mutual TLS</option>
+      <select (change)="onTypeInput($any($event.target).value)">
+        <option value="KeycloakAuthCodeExchange" [selected]="type() === 'KeycloakAuthCodeExchange'">
+          Keycloak OAuth2 Authorization Code + Token Exchange (RFC 8693)
+        </option>
+        <option value="OAuth2ClientCredentials" [selected]="type() === 'OAuth2ClientCredentials'">
+          OAuth2 Client Credentials
+        </option>
+        <option value="ApiKey" [selected]="type() === 'ApiKey'">
+          API Key
+        </option>
+        <option value="WsSecurityUsernameToken" [selected]="type() === 'WsSecurityUsernameToken'">
+          WS-Security UsernameToken
+        </option>
+        <option value="MutualTls" [selected]="type() === 'MutualTls'">
+          Mutual TLS
+        </option>
+        <option value="SqlServerConnectionString" [selected]="type() === 'SqlServerConnectionString'">
+          SQL Server Connection String
+        </option>
       </select>
     </div>
 
@@ -103,49 +114,98 @@
         <div class="form-grid">
           <div class="form-group full">
             <label>Client Certificate (Key Vault secret URI)</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().certRef"
               (input)="patchForm('certRef', $any($event.target).value)" />
           </div>
 
           <div class="form-group full">
             <label>Client Private Key (Key Vault secret URI)</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().keyRef"
               (input)="patchForm('keyRef', $any($event.target).value)" />
           </div>
 
           <div class="form-group full">
             <label>CA Certificate (Key Vault secret URI) — optional</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().caRef"
               (input)="patchForm('caRef', $any($event.target).value)" />
           </div>
 
           <div class="form-group full">
             <label>Certificate Password (Key Vault secret URI) — optional</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().passRef"
               (input)="patchForm('passRef', $any($event.target).value)" />
           </div>
 
           <div class="form-group">
             <label>Client Certificate Thumbprint (optional)</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().thumbprint"
               (input)="patchForm('thumbprint', $any($event.target).value)" />
           </div>
         </div>
+      </div>
+    }
+
+        @if (showSqlServerBlock()) {
+      <div class="form-group full">
+        <div style="padding:10px 12px;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#6d28d9;line-height:1.5">
+          <b>🗄 SQL Server Connection String</b> — Choose how the credential portion is stored.
+        </div>
+
+        <div class="form-group full">
+          <label>Credential Storage Mode</label>
+          <select (change)="onStorageModeInput($any($event.target).value)">
+            <option value="KeyVault" [selected]="storageMode() === 'KeyVault'">
+              Key Vault reference (recommended)
+            </option>
+            <option value="Inline" [selected]="storageMode() === 'Inline'">
+              Inline connection string (username &amp; password)
+            </option>
+          </select>
+        </div>
+
+        @if (!isInlineMode()) {
+          <div class="form-group full">
+            <label>Connection String Secret Reference</label>
+            <input
+              type="text"
+              style="font-family:var(--mono)"
+              placeholder="https://vault.azure.net/secrets/..."
+              [value]="form().connectionStringSecretRef"
+              (input)="patchForm('connectionStringSecretRef', $any($event.target).value)" />
+            <div class="hint">
+              Examples: <code>User ID=ei_worker;Password=…;</code> or
+              <code>Authentication=Active Directory Managed Identity;</code>
+            </div>
+          </div>
+        } @else {
+          <div class="form-group full">
+            <div style="padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px;font-size:11px;color:#991b1b;line-height:1.6">
+              <b>⚠ Warning — credentials stored in plain text</b><br>
+              The username and password will be written to the database and
+              returned in every read of this profile. Only use this mode inside
+              a private network with a trusted access boundary, and rotate the
+              credentials on a short cycle.
+            </div>
+
+            <label>Full Connection String</label>
+            <textarea
+              class="editor-pane"
+              rows="5"
+              style="margin-top:4px"
+              placeholder="Server=tcp:host,1433;Database=Db;User ID=user;Password=...;Encrypt=True;"
+              [value]="form().inlineConnectionString"
+              (input)="patchForm('inlineConnectionString', $any($event.target).value)"></textarea>
+            <div class="hint">
+              Must include <code>Server=</code> or <code>Data Source=</code>, and one of
+              <code>User ID=</code> + <code>Password=</code>, or <code>Authentication=</code>.
+            </div>
+          </div>
+        }
       </div>
     }
   </div>

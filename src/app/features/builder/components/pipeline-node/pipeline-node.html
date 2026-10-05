@@ -34,6 +34,18 @@
         }
       }
 
+            @case ('SqlQuery') {
+        @if (asSqlQuery(); as t) {
+          SQL: <code>{{ queryFirstLine() }}</code><br>
+          @if (sqlConnection(); as c) {
+            {{ c.name }}<br>
+          }
+          @if (t.outputKey) {
+            stored as <code>{{ t.outputKey }}</code>
+          }
+        }
+      }
+
       @case ('ApiPush') {
         @if (asApiPush(); as t) {
           {{ t.method || 'POST' }} {{ pushConnection()?.baseUrl || '—' }}{{ t.url || '' }}<br>

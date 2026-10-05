@@ -1,5 +1,6 @@
 export type TaskType =
   | 'ApiPull'
+  | 'SqlQuery'
   | 'Transform'
   | 'ApiPush'
   | 'Notify'
@@ -13,7 +14,6 @@ export interface SubTask {
   type: 'ApiPush' | 'Notify';
   name: string;
 
-  // ApiPush fields
   connectionId?: string;
   authId?: string;
   url?: string;
@@ -21,7 +21,6 @@ export interface SubTask {
   body?: string;
   timeout?: number;
 
-  // Notify fields
   kafkaTopic?: string;
 }
 
@@ -39,6 +38,30 @@ export interface ApiPullTask extends BaseTask {
   url: string;
   method: HttpMethod;
   outputKey?: string;
+  sampleResponse?: string;
+}
+
+/**
+ * A SQL Server query executed against a `SqlServer`-protocol connection.
+ * The connection's auth profile supplies the credentials — either from a
+ * Key Vault reference or from the inline connection string, depending on
+ * the profile's `credentialStorageMode`.
+ *
+ * The result set is a JSON array of row objects, which feeds the pipeline
+ * context under `outputKey` and can be transformed, filtered, or iterated
+ * by any downstream task.
+ */
+export interface SqlQueryTask extends BaseTask {
+  type: 'SqlQuery';
+  connectionId: string;
+  authId?: string;
+  /** T-SQL statement. Row-returning queries only. */
+  query: string;
+  /** Query timeout in seconds. Overrides the connection's default. */
+  queryTimeout?: number;
+  /** Where the result set is stored in the pipeline context. */
+  outputKey?: string;
+  /** Sample result set (JSON array) for the demo. Real execution uses the connection. */
   sampleResponse?: string;
 }
 
@@ -71,6 +94,7 @@ export interface NotifyTask extends BaseTask {
 
 export type BranchChildTask =
   | ApiPullTask
+  | SqlQueryTask
   | TransformTask
   | ApiPushTask
   | NotifyTask;
@@ -95,13 +119,13 @@ export interface JoinPointTask extends BaseTask {
 
 export type PipelineTask =
   | ApiPullTask
+  | SqlQueryTask
   | TransformTask
   | ApiPushTask
   | NotifyTask
   | BranchTask
   | JoinPointTask;
 
-/** Block grouping used by the pipeline canvas renderer. */
 export interface PipelineBlock {
   type: 'node' | 'fork';
   task?: PipelineTask;

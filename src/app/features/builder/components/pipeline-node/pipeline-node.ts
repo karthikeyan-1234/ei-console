@@ -6,6 +6,7 @@ import {
   JoinPointTask,
   NotifyTask,
   PipelineTask,
+  SqlQueryTask,
   SubTask,
   TransformTask,
 } from '../../../../core/models';
@@ -17,6 +18,8 @@ import { JsonFlowService } from '../../../../core/services/json-flow.service';
 import { JsonOverlayService } from '../../../../shared/services/json-overlay.service';
 
 import { TaskEditorService } from '../../services/task-editor.service';
+
+
 
 @Component({
   selector: 'ei-pipeline-node',
@@ -64,6 +67,23 @@ readonly dragChildIdx = input<number | null>(null);
     return t.type === 'ApiPull' ? t : null;
   });
 
+    readonly asSqlQuery = computed<SqlQueryTask | null>(() => {
+    const t = this.task();
+    return t.type === 'SqlQuery' ? t : null;
+  });
+
+  readonly sqlConnection = computed(() => {
+    const t = this.asSqlQuery();
+    return t ? this.connections.byId(t.connectionId) ?? null : null;
+  });
+
+  readonly queryFirstLine = computed(() => {
+    const t = this.asSqlQuery();
+    if (!t) return '';
+    const first = (t.query ?? '').split('\n')[0] || '—';
+    return first.length > 44 ? first.substring(0, 44) + '…' : first;
+  });
+
   readonly asApiPush = computed<ApiPushTask | null>(() => {
     const t = this.task();
     return t.type === 'ApiPush' ? t : null;
@@ -102,6 +122,7 @@ readonly dragChildIdx = input<number | null>(null);
       case 'Notify':     classes.push('notify'); break;
       case 'Branch':     classes.push('branch', 'branch-node'); break;
       case 'JoinPoint':  classes.push('join', 'join-node'); break;
+      case 'SqlQuery':   classes.push('sql'); break;
     }
 
     if (t.type === 'Transform' && t.iterate) classes.push('iterator-node');
@@ -116,6 +137,7 @@ readonly dragChildIdx = input<number | null>(null);
       case 'Notify':    return '✉';
       case 'Branch':    return '⑂';
       case 'JoinPoint': return '⊧';
+            case 'SqlQuery':  return 'S';
       default:          return '•';
     }
   });
@@ -125,6 +147,7 @@ readonly dragChildIdx = input<number | null>(null);
     if (t.type === 'Transform' && t.iterate) return { text: 'FOR-EACH', cls: 'iterator-chip' };
     if (t.type === 'JoinPoint') return { text: 'AWAIT', cls: 'join-chip' };
     if (t.type === 'Branch')    return { text: 'BRANCH', cls: 'branch-chip' };
+        if (t.type === 'SqlQuery')    return { text: 'SQL', cls: 'iterator-chip' };
     return null;
   });
 

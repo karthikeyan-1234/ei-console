@@ -40,6 +40,20 @@ export class ConnectionModalComponent implements OnInit {
     this.isEdit() ? 'Update provider endpoint' : 'Register a provider endpoint',
   );
 
+    /** True when the selected protocol is SqlServer. Drives label swaps and hides HTTP-only fields. */
+  readonly isSqlServer = computed(() => this.protocol() === 'SqlServer');
+
+  /** Label for the base-URL field, swapped per protocol. */
+  readonly baseUrlLabel = computed(() =>
+    this.isSqlServer() ? 'Connection String Fragment' : 'Base URL',
+  );
+
+  readonly baseUrlHint = computed(() =>
+    this.isSqlServer()
+      ? 'Server=tcp:host,1433;Database=DbName;Encrypt=True; — credentials come from the auth profile.'
+      : '',
+  );
+
   /** Dropdown of active tenants plus the `__shared` pseudo-tenant. */
   readonly tenantOptions = computed(() => {
     const list = this.tenants.activeTenants().map(t => ({ id: t.id, label: t.name }));

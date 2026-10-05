@@ -17,11 +17,15 @@ import { NotifyFieldsComponent } from './fields/notify-fields';
 import { JoinPointFieldsComponent } from './fields/join-point-fields';
 import { BranchFieldsComponent } from './fields/branch-fields';
 
+import { SqlQueryTask } from '../../../../core/models';
+import { SqlQueryFieldsComponent } from './fields/sql-query-fields';
+
 @Component({
   selector: 'ei-task-editor',
   imports: [
     ModalShellComponent,
     ApiPullFieldsComponent,
+    SqlQueryFieldsComponent,
     ApiPushFieldsComponent,
     TransformFieldsComponent,
     NotifyFieldsComponent,
@@ -69,14 +73,19 @@ export class TaskEditorComponent {
     if (!ctx) return [];
     if (ctx.path.level === 'sub') return ['ApiPush', 'Notify'];
     if (ctx.path.level === 'branch-child') {
-      return ['ApiPull', 'Transform', 'ApiPush', 'Notify'];
+      return ['ApiPull', 'SqlQuery', 'Transform', 'ApiPush', 'Notify'];
     }
-    return ['ApiPull', 'Transform', 'ApiPush', 'Notify', 'Branch', 'JoinPoint'];
+    return ['ApiPull', 'SqlQuery', 'Transform', 'ApiPush', 'Notify', 'Branch', 'JoinPoint'];
   });
 
   readonly asApiPull = computed<ApiPullTask | null>(() => {
     const ctx = this.context();
     return ctx && ctx.task.type === 'ApiPull' ? (ctx.task as ApiPullTask) : null;
+  });
+
+    readonly asSqlQuery = computed<SqlQueryTask | null>(() => {
+    const ctx = this.context();
+    return ctx && ctx.task.type === 'SqlQuery' ? (ctx.task as SqlQueryTask) : null;
   });
 
   readonly asApiPush = computed<ApiPushTask | null>(() => {
@@ -143,7 +152,7 @@ export class TaskEditorComponent {
    * original console's post-save cleanup: switching a Transform to an ApiPull
    * shouldn't leave the JSONata expression and sub-tasks behind.
    */
-  private cleanupForType(t: Record<string, unknown>, type: TaskType): void {
+    private cleanupForType(t: Record<string, unknown>, type: TaskType): void {
     if (type !== 'Transform') {
       delete t['iterate'];
       delete t['subtasks'];
@@ -165,6 +174,30 @@ export class TaskEditorComponent {
     }
     if (type !== 'Notify') {
       delete t['kafkaTopic'];
+    }
+    if (type !== 'SqlQuery') {
+      delete t['query'];
+      delete t['queryTimeout'];
+    }
+
+    const hasUrl = type === 'ApiPull' || type === 'ApiPush' || type === 'Notify';
+    if (!hasUrl) delete t['url'];
+
+    const hasMethod = type === 'ApiPull' || type === 'ApiPush';
+    if (!hasMethod) delete t['method'];
+
+    const hasBody = type === 'ApiPush' || type === 'Notify';
+    if (!hasBody) delete t['body'];
+
+    const hasOutputKey = type === 'ApiPull' || type === 'SqlQuery';
+    if (!hasOutputKey) {
+      delete t['outputKey'];
+      delete t['sampleResponse'];
+    }
+
+    if (type === 'Branch') {
+      if (!Array.isArray(t['children'])) t['children'] = [];
+      if (!t['executionMode']) t['executionMode'] = 'Sequential';
     }
   }
 }

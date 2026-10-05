@@ -36,6 +36,14 @@ export const SEED_CONNECTIONS: Connection[] = [
   { id:'conn-7', name:'Provider B Customers API', provider:'Oman Insurance', protocol:'Rest', baseUrl:'https://api.providerB.om/v1', tenant:'broker-uae', authProfile:'auth-2', status:'Active', timeout:30000, headers:'{"Accept":"application/json"}' },
   { id:'conn-8', name:'Provider C Vehicles API', provider:'Sukoon', protocol:'Rest', baseUrl:'https://api.providerC.ae/v1', tenant:'broker-uae', authProfile:'auth-2', status:'Active', timeout:30000, headers:'{"Accept":"application/json"}' },
   { id:'conn-9', name:'Provider D Claims API', provider:'Daman', protocol:'Rest', baseUrl:'https://api.providerD.ae/v1', tenant:'broker-uae', authProfile:'auth-4', status:'Active', timeout:45000, headers:'{"Accept":"application/json"}' },
+  { id:'conn-10', name:'InsureLiv Core DB', provider:'InsureLiv', protocol:'SqlServer',
+    baseUrl:'Server=tcp:insureliv-sql.database.windows.net,1433;Database=InsureLivCore;Encrypt=True;TrustServerCertificate=False;',
+    tenant:'broker-uae', authProfile:'auth-7', status:'Active', timeout:30,
+    headers:'' },
+      { id:'conn-11', name:'Legacy Reporting DB', provider:'InsureLiv Internal', protocol:'SqlServer',
+    baseUrl:'Server=tcp:legacy-reporting.internal,1433;Database=Reports;Encrypt=True;TrustServerCertificate=True;',
+    tenant:'broker-uae', authProfile:'auth-8', status:'Active', timeout:60,
+    headers:'' },
 ];
 
 export const SEED_AUTH_PROFILES: AuthProfile[] = [
@@ -74,6 +82,21 @@ export const SEED_AUTH_PROFILES: AuthProfile[] = [
     keyRef:'https://kv.vault.azure.net/secrets/daman-client-key',
     caRef:'https://kv.vault.azure.net/secrets/daman-ca-cert',
     passRef:'', thumbprint:'', tenant:'broker-uae',
+  },
+  {
+    id: 'auth-7', name: 'SQL Server · InsureLiv Core DB', type: 'SqlServerConnectionString',
+    credentialStorageMode: 'KeyVault',
+    connectionStringSecretRef:
+      'https://insureliv-kv.vault.azure.net/secrets/ei-sql-core-credentials',
+    tenant: 'broker-uae',
+  },
+    {
+    id: 'auth-8', name: 'SQL Server · Legacy Reporting (inline)',
+    type: 'SqlServerConnectionString',
+    credentialStorageMode: 'Inline',
+    inlineConnectionString:
+      'Server=tcp:legacy-reporting.internal,1433;Database=Reports;User ID=ei_reader;Password=ReadOnly_2026!;Encrypt=True;TrustServerCertificate=True;',
+    tenant: 'broker-uae',
   },
 ];
 
@@ -346,6 +369,40 @@ export const SEED_JOBS: Job[] = [
     description:'Receive quote status updates via webhook.',
     version:1, publishedAt:'10 Sep 2026 14:20', publishedBy:'ahmed.k', pipeline: [],
   },
+    {
+    id: 9, name:'Pending Claims Extract', slug:'pending-claims-extract', tenant:'broker-uae',
+    status:'Active', trigger:'Scheduled', cron:'0 0 */2 * * *',
+    created:'05 Oct 2026 09:00', lastRun:'—', next:'Every 2 hours',
+    description:'Extracts pending claims from InsureLiv Core DB and pushes them to the reinsurer.',
+    version:1, publishedAt:'05 Oct 2026 09:00', publishedBy:'ahmed.k',
+    pipeline: [
+      {
+        id:'t1', type:'SqlQuery', name:'Query pending claims',
+        connectionId:'conn-10', authId:'auth-7',
+        query: "SELECT claim_no, policy_no, amount, customer_id, claim_date\nFROM Claims\nWHERE status = 'Pending'\nORDER BY claim_date DESC;",
+        queryTimeout: 60,
+        outputKey: 'PendingClaims',
+        sampleResponse: `[
+  { "claim_no": "CLM-2026-00101", "policy_no": "POL-2026-00192", "amount": 4500, "customer_id": "CUS-8821", "claim_date": "2026-10-01" },
+  { "claim_no": "CLM-2026-00102", "policy_no": "POL-2026-00193", "amount": 12300, "customer_id": "CUS-8822", "claim_date": "2026-10-02" }
+]`,
+      },
+      {
+        id:'t2', type:'Transform', name:'Map to reinsurer schema',
+        inputSource:'PendingClaims',
+        jsonata: '$map($, function($c){ {"claimNumber": $c.claim_no, "policyNumber": $c.policy_no, "amount": $c.amount, "customerId": $c.customer_id, "claimDate": $c.claim_date} })',
+        iterate: true,
+        subtasks: [
+          {
+            id:'s1', type:'ApiPush', name:'Push claim to reinsurer',
+            connectionId:'conn-6', authId:'auth-1',
+            url:'/v1/claims', method:'POST', timeout:30,
+            body:'$item',
+          },
+        ],
+      },
+    ],
+  },
 ];
 
 export const SEED_EXECUTIONS: Execution[] = [
@@ -432,3 +489,4 @@ export const SEED_DLQ: DlqItem[] = [
   { id:'DLQ-8817', item:'POL-000288', source:'policy.synced.retry', job:'Policy Master Sync', status:'Pending', error:'Schema validation', firstFailed:'19 Sep 2026 19:42', attempts:3 },
   { id:'DLQ-8815', item:'POL-000270', source:'ei.jobs.dlq', job:'Provider Quote Pull', status:'Discarded', error:'Auth failure', firstFailed:'19 Sep 2026 18:20', attempts:3 },
 ];
+

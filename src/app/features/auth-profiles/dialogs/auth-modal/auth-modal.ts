@@ -1,5 +1,9 @@
 import { Component, OnInit, computed, input, output, signal } from '@angular/core';
-import { AuthProfile, AuthType } from '../../../../core/models';
+import {
+  AuthProfile,
+  AuthType,
+  CredentialStorageMode,
+} from '../../../../core/models';
 import { ModalShellComponent } from '../../../../shared/components/modal-shell/modal-shell';
 
 export interface AuthSaveEvent {
@@ -23,6 +27,10 @@ interface AuthForm {
   caRef: string;
   passRef: string;
   thumbprint: string;
+
+  // SqlServer-only — mode decides which of these two is used.
+  connectionStringSecretRef: string;
+  inlineConnectionString: string;
 }
 
 const EMPTY_FORM: AuthForm = {
@@ -37,6 +45,8 @@ const EMPTY_FORM: AuthForm = {
   caRef: '',
   passRef: '',
   thumbprint: '',
+  connectionStringSecretRef: '',
+  inlineConnectionString: '',
 };
 
 @Component({
@@ -52,6 +62,7 @@ export class AuthModalComponent implements OnInit {
 
   readonly name = signal('');
   readonly type = signal<AuthType>('KeycloakAuthCodeExchange');
+  readonly storageMode = signal<CredentialStorageMode>('KeyVault');
   readonly form = signal<AuthForm>({ ...EMPTY_FORM });
   readonly error = signal<string | null>(null);
 
@@ -61,13 +72,22 @@ export class AuthModalComponent implements OnInit {
     this.isEdit() ? 'Update authentication' : 'Configure authentication',
   );
 
-  /** True when the modal should show the credential block (not mTLS). */
-  readonly showCredentialBlock = computed(() => this.type() !== 'MutualTls');
+  readonly showCredentialBlock = computed(() => {
+    const t = this.type();
+    return (
+      t === 'KeycloakAuthCodeExchange' ||
+      t === 'OAuth2ClientCredentials' ||
+      t === 'ApiKey' ||
+      t === 'WsSecurityUsernameToken'
+    );
+  });
 
-  /** True when the modal should show the mTLS block. */
   readonly showMtlsBlock = computed(() => this.type() === 'MutualTls');
+  readonly showSqlServerBlock = computed(() => this.type() === 'SqlServerConnectionString');
 
-  /** Label for the base-URL field, swapped per type. */
+  /** True when the SQL Server block should render the inline connection-string editor. */
+  readonly isInlineMode = computed(() => this.storageMode() === 'Inline');
+
   readonly baseUrlLabel = computed(() => {
     switch (this.type()) {
       case 'KeycloakAuthCodeExchange': return 'Keycloak Base URL';
@@ -78,7 +98,6 @@ export class AuthModalComponent implements OnInit {
     }
   });
 
-  /** Header title for the credential block. */
   readonly headerTitle = computed(() => {
     switch (this.type()) {
       case 'KeycloakAuthCodeExchange': return '🔐 Keycloak Configuration';
@@ -100,6 +119,7 @@ export class AuthModalComponent implements OnInit {
     if (p) {
       this.name.set(p.name);
       this.type.set(p.type);
+      this.storageMode.set(p.credentialStorageMode ?? 'KeyVault');
       this.form.set({
         kcBaseUrl: p.kcBaseUrl ?? '',
         realm: p.realm ?? '',
@@ -112,9 +132,11 @@ export class AuthModalComponent implements OnInit {
         caRef: p.caRef ?? '',
         passRef: p.passRef ?? '',
         thumbprint: p.thumbprint ?? '',
+        connectionStringSecretRef: p.connectionStringSecretRef ?? '',
+        inlineConnectionString: p.inlineConnectionString ?? '',
       });
     } else {
-      // Sensible defaults for a brand-new Keycloak profile, matching the seed.
+      this.storageMode.set('KeyVault');
       this.form.set({
         ...EMPTY_FORM,
         kcBaseUrl: 'https://auth.insureliv.com',
@@ -129,12 +151,11 @@ export class AuthModalComponent implements OnInit {
   onNameInput(v: string): void { this.name.set(v); }
 
   onTypeInput(v: string): void {
-    const next = v as AuthType;
-    this.type.set(next);
-    // When switching between credential-types, keep the credential form as-is.
-    // When switching into mTLS, keep whatever was typed there before.
-    // When switching into credential-types, keep their previous values too.
-    // Nothing is cleared — the two field sets are disjoint.
+    this.type.set(v as AuthType);
+  }
+
+  onStorageModeInput(v: string): void {
+    this.storageMode.set(v as CredentialStorageMode);
   }
 
   patchForm<K extends keyof AuthForm>(key: K, value: AuthForm[K]): void {
@@ -153,7 +174,11 @@ export class AuthModalComponent implements OnInit {
 
     const type = this.type();
     const f = this.form();
+    const p = this.profile();
 
+    // ---------------------------------------------------------------------
+    // Mutual TLS
+    // ---------------------------------------------------------------------
     if (type === 'MutualTls') {
       const certRef = f.certRef.trim();
       const keyRef = f.keyRef.trim();
@@ -162,33 +187,30 @@ export class AuthModalComponent implements OnInit {
         return;
       }
 
-      const p = this.profile();
+      const payload: Partial<AuthProfile> = {
+        name,
+        type,
+        certRef,
+        keyRef,
+        caRef: f.caRef.trim(),
+        passRef: f.passRef.trim(),
+        thumbprint: f.thumbprint.trim(),
+      };
+
       if (p) {
-        this.saved.emit({
-          profile: p,
-          patch: {
-            name,
-            type,
-            certRef,
-            keyRef,
-            caRef: f.caRef.trim(),
-            passRef: f.passRef.trim(),
-            thumbprint: f.thumbprint.trim(),
-          },
-          isNew: false,
-        });
+        this.saved.emit({ profile: p, patch: payload, isNew: false });
       } else {
         this.saved.emit({
           profile: {
             id: '',
             name,
             type,
-            tenant: '', // filled by the view
+            tenant: '',
             certRef,
             keyRef,
-            caRef: f.caRef.trim(),
-            passRef: f.passRef.trim(),
-            thumbprint: f.thumbprint.trim(),
+            caRef: payload.caRef,
+            passRef: payload.passRef,
+            thumbprint: payload.thumbprint,
           },
           patch: {},
           isNew: true,
@@ -197,7 +219,105 @@ export class AuthModalComponent implements OnInit {
       return;
     }
 
-    // Credential-type save
+    // ---------------------------------------------------------------------
+    // SQL Server Connection String
+    // ---------------------------------------------------------------------
+    if (type === 'SqlServerConnectionString') {
+      const mode = this.storageMode();
+
+      if (mode === 'KeyVault') {
+        const connectionStringSecretRef = f.connectionStringSecretRef.trim();
+        if (!connectionStringSecretRef) {
+          this.error.set(
+            'A Key Vault secret reference is required when storing credentials in Key Vault.',
+          );
+          return;
+        }
+
+        const payload: Partial<AuthProfile> = {
+          name,
+          type,
+          credentialStorageMode: 'KeyVault',
+          connectionStringSecretRef,
+          inlineConnectionString: undefined,
+        };
+
+        if (p) {
+          this.saved.emit({ profile: p, patch: payload, isNew: false });
+        } else {
+          this.saved.emit({
+            profile: {
+              id: '',
+              name,
+              type,
+              tenant: '',
+              credentialStorageMode: 'KeyVault',
+              connectionStringSecretRef,
+            },
+            patch: {},
+            isNew: true,
+          });
+        }
+        return;
+      }
+
+      // Inline mode
+      const inline = f.inlineConnectionString.trim();
+      if (!inline) {
+        this.error.set('The inline connection string is required.');
+        return;
+      }
+
+      // A very shallow sanity check — the value should at least look like a
+      // connection string. We do not attempt to parse it, because credentials
+      // may use any of the many SqlClient keywords and we do not want to
+      // reject valid strings.
+      const hasServer =
+        /(?:^|;)\s*(?:Server|Data Source)\s*=/i.test(inline);
+      const hasCredentials =
+        /(?:^|;)\s*(?:User ID|UID|User|Authentication)\s*=/i.test(inline);
+
+      if (!hasServer) {
+        this.error.set('The connection string must include a Server= or Data Source= keyword.');
+        return;
+      }
+      if (!hasCredentials) {
+        this.error.set(
+          'Inline mode requires credentials. Add User ID= (with Password=), or Authentication= to the string.',
+        );
+        return;
+      }
+
+      const payload: Partial<AuthProfile> = {
+        name,
+        type,
+        credentialStorageMode: 'Inline',
+        inlineConnectionString: inline,
+        connectionStringSecretRef: undefined,
+      };
+
+      if (p) {
+        this.saved.emit({ profile: p, patch: payload, isNew: false });
+      } else {
+        this.saved.emit({
+          profile: {
+            id: '',
+            name,
+            type,
+            tenant: '',
+            credentialStorageMode: 'Inline',
+            inlineConnectionString: inline,
+          },
+          patch: {},
+          isNew: true,
+        });
+      }
+      return;
+    }
+
+    // ---------------------------------------------------------------------
+    // Credential types — Keycloak / OAuth2 / ApiKey / WS-Security
+    // ---------------------------------------------------------------------
     const patchOrNew: Partial<AuthProfile> = {
       name,
       type,
@@ -209,7 +329,6 @@ export class AuthModalComponent implements OnInit {
       scope: f.scope.trim(),
     };
 
-    const p = this.profile();
     if (p) {
       this.saved.emit({ profile: p, patch: patchOrNew, isNew: false });
     } else {
@@ -218,7 +337,7 @@ export class AuthModalComponent implements OnInit {
           id: '',
           name,
           type,
-          tenant: '', // filled by the view
+          tenant: '',
           ...patchOrNew,
         },
         patch: {},

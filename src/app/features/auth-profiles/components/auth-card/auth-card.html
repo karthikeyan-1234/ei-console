@@ -1,7 +1,17 @@
 <div class="ccard">
   <div class="cc-head">
     <div class="cc-title">{{ icon() }} {{ profile().name }}</div>
-    <span class="tenant-badge">{{ tenantLabel() }}</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      @if (isInlineCredential()) {
+        <span
+          class="shared-badge"
+          style="background:#fee2e2;color:#991b1b"
+          title="Credentials are stored inline, not in Key Vault">
+          🔓 Inline
+        </span>
+      }
+      <span class="tenant-badge">{{ tenantLabel() }}</span>
+    </div>
   </div>
 
   <div class="cc-meta">
@@ -13,6 +23,15 @@
 
     @if (profile().audience && profile().audience !== '—') {
       <div><b>Audience:</b> {{ profile().audience }}</div>
+    }
+
+    @if (isInlineCredential() && inlineServerHint()) {
+      <div>
+        <b>Server:</b>
+        <code style="font-family:var(--mono);font-size:10.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px">
+          {{ inlineServerHint() }}
+        </code>
+      </div>
     }
   </div>
 
