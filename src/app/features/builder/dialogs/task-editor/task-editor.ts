@@ -113,6 +113,9 @@ export class TaskEditorComponent {
     return ctx && ctx.task.type === 'JoinPoint' ? (ctx.task as JoinPointTask) : null;
   });
 
+  readonly canGoBack = this.editor.canGoBack;
+readonly parentTaskName = this.editor.parentTaskName;
+
   constructor() {
     effect(() => {
       const ctx = this.context();
@@ -147,6 +150,10 @@ export class TaskEditorComponent {
     this.editor.cancel();
   }
 
+  onBack(): void {
+  this.editor.back();
+}
+
   /**
    * Removes fields that don't apply to the task's current type. Mirrors the
    * original console's post-save cleanup: switching a Transform to an ApiPull
@@ -171,6 +178,10 @@ export class TaskEditorComponent {
       delete t['joinThreshold'];
       delete t['joinTimeoutSeconds'];
       delete t['joinTimeoutAction'];
+    }
+    if (type === 'Branch') {
+      if (!Array.isArray(t['children'])) t['children'] = [];
+      if (!t['executionMode']) t['executionMode'] = 'Sequential';
     }
     if (type !== 'Notify') {
       delete t['kafkaTopic'];

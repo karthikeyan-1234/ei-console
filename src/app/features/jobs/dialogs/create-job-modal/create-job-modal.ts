@@ -1,4 +1,4 @@
-import { Component, computed, inject, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Job, TriggerType } from '../../../../core/models';
 import { JobService } from '../../../../core/services/job.service';
@@ -19,6 +19,13 @@ export class CreateJobModalComponent {
   private readonly toasts = inject(ToastService);
   private readonly router = inject(Router);
 
+  /**
+   * When non-null, the modal opens in edit mode for this job. When null, it
+   * opens in create mode. The component name still says "create" for
+   * historical reasons — it handles both flows now.
+   */
+  readonly editing = input<Job | null>(null);
+
   readonly saved = output<Job>();
   readonly cancelled = output<void>();
 
@@ -34,13 +41,53 @@ export class CreateJobModalComponent {
 
   private slugEdited = false;
 
+  readonly isEdit = computed(() => this.editing() !== null);
+  readonly title = computed(() => (this.isEdit() ? 'Edit Job' : 'Create Job'));
+  readonly subtitle = computed(() =>
+    this.isEdit()
+      ? 'Update the job identity and schedule. Tasks are edited in Job Builder.'
+      : 'Register identity. Tasks are added in Job Builder.',
+  );
+  readonly saveLabel = computed(() =>
+    this.isEdit() ? 'Save Changes' : 'Create Job & open in Builder →',
+  );
+
   readonly shownSlug = computed(() =>
     slugify(this.slug().trim() || this.name()),
   );
 
-  readonly slugConflicts = computed(() =>
-    !!this.shownSlug() && this.jobs.slugConflict(this.tenant(), this.shownSlug()),
-  );
+  readonly slugConflicts = computed(() => {
+    const shown = this.shownSlug();
+    if (!shown) return false;
+    // When editing, exclude the job being edited from the uniqueness check.
+    return this.jobs.slugConflict(this.tenant(), shown, this.editing()?.id);
+  });
+
+  constructor() {
+    effect(() => {
+      const job = this.editing();
+      if (job) {
+        this.name.set(job.name);
+        this.slug.set(job.slug);
+        this.tenant.set(job.tenant);
+        this.trigger.set(job.trigger);
+        this.cron.set(job.cron === '—' ? '0 */15 * * * *' : job.cron);
+        this.description.set(job.description ?? '');
+        this.slugEdited = true;
+        this.error.set(null);
+      } else {
+        // Reset to defaults for a fresh create.
+        this.name.set('');
+        this.slug.set('');
+        this.tenant.set(this.tenants.activeTenantId());
+        this.trigger.set('Scheduled');
+        this.cron.set('0 */15 * * * *');
+        this.description.set('');
+        this.slugEdited = false;
+        this.error.set(null);
+      }
+    });
+  }
 
   onNameInput(value: string): void {
     this.name.set(value);
@@ -80,8 +127,21 @@ export class CreateJobModalComponent {
       }
     }
 
-    if (this.jobs.slugConflict(this.tenant(), slug)) {
+    if (this.jobs.slugConflict(this.tenant(), slug, this.editing()?.id)) {
       this.error.set(`Slug "${slug}" already exists for ${this.tenants.labelFor(this.tenant())}.`);
+      return;
+    }
+
+    if (this.isEdit()) {
+      const job = this.editing()!;
+      const updated = await this.jobs.update(job.id, {
+        name,
+        trigger,
+        cron: trigger === 'Scheduled' ? cron : '—',
+        description: this.description().trim(),
+      });
+      this.toasts.success(`Job "${updated.name}" updated`);
+      this.saved.emit(updated);
       return;
     }
 
@@ -102,7 +162,6 @@ export class CreateJobModalComponent {
       pipeline: [],
     });
 
-    // Switch the active tenant if the new job belongs to a different one.
     if (created.tenant !== this.tenants.activeTenantId()) {
       this.tenants.switchTo(created.tenant);
     }

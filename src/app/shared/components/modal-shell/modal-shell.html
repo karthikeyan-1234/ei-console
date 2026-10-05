@@ -2,6 +2,14 @@
   <div class="modal" [class.wide]="wide()" (click)="$event.stopPropagation()">
     <div class="modal-head">
       <div>
+        @if (showBack()) {
+          <button
+            class="modal-back"
+            (click)="onBack()"
+            [title]="backLabel()">
+            ← {{ backLabel() }}
+          </button>
+        }
         <h3>{{ title() }}</h3>
         @if (subtitle()) {
           <div class="sub">{{ subtitle() }}</div>

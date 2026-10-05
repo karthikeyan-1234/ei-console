@@ -16,7 +16,8 @@
           [task]="block.task"
           dragKind="top"
           [dragTopIdx]="block.startIdx"
-          [jobId]="job().id" />
+          [jobId]="job().id"
+          [nodePath]="{ level: 'top', topIdx: block.startIdx }" />
       } @else if (block.type === 'fork') {
         <ei-fork-block
           [block]="block"
@@ -25,7 +26,12 @@
       }
 
       @if (!isLast) {
-        <div class="pipeline-arrow"></div>
+        <div
+          class="pipeline-arrow clickable"
+          [class.selected]="arrowIdx() === i"
+          [attr.data-arrow-after-block]="i"
+          title="Click to select this connector — + Add task inserts here"
+          (click)="onArrowClick(i)"></div>
       }
     }
 

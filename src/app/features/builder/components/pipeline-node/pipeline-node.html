@@ -98,6 +98,12 @@
 
   <div class="pn-actions">
     <button class="btn btn-outline btn-sm" (click)="onEdit(); $event.stopPropagation()">Edit</button>
+    @if (showRemoveButton()) {
+      <button
+        class="btn-ghost btn btn-sm"
+        style="color:var(--red)"
+        (click)="onRemove(); $event.stopPropagation()">Remove</button>
+    }
   </div>
 
   <!-- Branch children (read-only list) -->
@@ -108,7 +114,7 @@
         {{ branchChildren().length }}
       </div>
       <div class="subtasks-list">
-        @for (child of branchChildren(); track child.id) {
+        @for (child of branchChildren(); track child.id; let i = $index) {
           <div class="subtask-row" [attr.data-task-id]="child.id">
             <span class="st-type">{{ subTaskIcon(child.type) }} {{ child.type }}</span>
             <span class="st-meta">{{ child.name || child.type }}</span>
@@ -117,6 +123,10 @@
                 class="btn btn-outline btn-sm"
                 style="padding:3px 8px;font-size:10px"
                 (click)="onEditBranchChild($event, child.id)">Edit</button>
+              <button
+                class="btn-ghost btn btn-sm"
+                style="color:var(--red);padding:3px 8px;font-size:10px"
+                (click)="onRemoveChild($event, i)">✕</button>
             </div>
           </div>
         }
@@ -132,7 +142,7 @@
         sub-tasks · {{ transformSubtasks().length }}
       </div>
       <div class="subtasks-list">
-        @for (sub of transformSubtasks(); track sub.id) {
+        @for (sub of transformSubtasks(); track sub.id; let i = $index) {
           <div class="subtask-row" [attr.data-task-id]="sub.id">
             <span class="st-type">{{ sub.type }}</span>
             <span class="st-meta">{{ subTaskMeta(sub) }}</span>
@@ -141,11 +151,40 @@
                 class="btn btn-outline btn-sm"
                 style="padding:3px 8px;font-size:10px"
                 (click)="onEditSubTask($event, sub.id)">Edit</button>
+              <button
+                class="btn-ghost btn btn-sm"
+                style="color:var(--red);padding:3px 8px;font-size:10px"
+                (click)="onRemoveSubTask($event, i)">✕</button>
             </div>
           </div>
         }
       </div>
+      @if (showAddSubTask()) {
+        <button
+          class="btn btn-outline btn-sm"
+          style="margin-top:6px;font-size:10px"
+          (click)="onAddSubTask(); $event.stopPropagation()">+ Add sub-task</button>
+      }
     </div>
+  } @else if (showAddSubTask()) {
+    <div class="subtasks-block">
+      <div class="sb-head">
+        <span class="iter-badge">for-each item</span>
+        sub-tasks · 0
+      </div>
+      <button
+        class="btn btn-outline btn-sm"
+        style="margin-top:6px;font-size:10px"
+        (click)="onAddSubTask(); $event.stopPropagation()">+ Add sub-task</button>
+    </div>
+  }
+
+  <!-- Add child — only shown on lone branches (not lane branches) -->
+  @if (showAddChild() && !suppressChildren()) {
+    <button
+      class="btn btn-outline btn-sm"
+      style="margin-top:8px;font-size:10px"
+      (click)="onAddChild(); $event.stopPropagation()">+ Add child</button>
   }
 
 </div>

@@ -2,6 +2,7 @@ import { Component, computed, inject, input, output } from '@angular/core';
 import { Job } from '../../../../core/models';
 import { JobService } from '../../../../core/services/job.service';
 import { TenantService } from '../../../../core/services/tenant.service';
+import { ExecutionService } from '../../../../core/services/execution.service';
 
 @Component({
   selector: 'ei-builder-jobs-list',
@@ -11,12 +12,12 @@ import { TenantService } from '../../../../core/services/tenant.service';
 export class BuilderJobsListComponent {
   private readonly jobs = inject(JobService);
   private readonly tenants = inject(TenantService);
+  private readonly executions = inject(ExecutionService);
 
   readonly selectedJobId = input<number | null>(null);
   readonly jobSelected = output<number>();
 
   readonly rows = this.jobs.scopedJobs;
-
   readonly rowCount = computed(() => this.rows().length);
 
   versionLabel(job: Job): string {
@@ -44,6 +45,11 @@ export class BuilderJobsListComponent {
 
   isPlaceholder(job: Job): boolean {
     return this.taskCount(job) === 0;
+  }
+
+  /** True when the job has a running execution right now. */
+  isRunning(job: Job): boolean {
+    return !!this.executions.runningForJob(job.id);
   }
 
   onSelect(job: Job): void {

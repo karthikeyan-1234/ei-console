@@ -15,10 +15,13 @@
 
 <ei-jobs-table
   [rows]="filteredJobs()"
-  (jobOpened)="onOpenJob($event)" />
+  (jobOpened)="onOpenJob($event)"
+  (jobEdited)="onEditJob($event)"
+  (jobRemoved)="onRemoveJob($event)" />
 
-@if (createModalOpen()) {
+@if (modalOpen()) {
   <ei-create-job-modal
-    (saved)="onJobCreated($event)"
-    (cancelled)="onCreateCancelled()" />
+    [editing]="modalEditing()"
+    (saved)="onModalSaved($event)"
+    (cancelled)="onModalCancelled()" />
 }

@@ -1,8 +1,11 @@
 @if (context(); as ctx) {
-  <ei-modal-shell
-    [title]="title()"
-    [subtitle]="subtitle()"
-    (closed)="onCancel()">
+<ei-modal-shell
+  [title]="title()"
+  [subtitle]="subtitle()"
+  [showBack]="canGoBack()"
+  [backLabel]="'Back to ' + parentTaskName()"
+  (closed)="onCancel()"
+  (wentBack)="onBack()">
 
     <div class="form-grid" style="margin-bottom:14px">
       <div class="form-group">

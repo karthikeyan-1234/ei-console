@@ -1,11 +1,15 @@
 <ei-modal-shell
-  title="Create Job"
-  subtitle="Register identity. Tasks are added in Job Builder."
+  [title]="title()"
+  [subtitle]="subtitle()"
   [wide]="true"
   (closed)="onCancel()">
 
   <div class="callout">
     <b>Slug uniqueness:</b> <code>(tenant_id, endpoint_slug)</code> must be unique — enforced before save.
+    @if (isEdit()) {
+      <br><br>
+      <b>Slug and tenant cannot be changed</b> after creation. They define the job's external identity.
+    }
   </div>
 
   @if (error()) {
@@ -23,11 +27,13 @@
 
     <div class="form-group">
       <label>Tenant Scope</label>
-<select (change)="onTenantInput($any($event.target).value)">
-  @for (t of activeTenants(); track t.id) {
-    <option [value]="t.id" [selected]="t.id === tenant()">{{ t.name }}</option>
-  }
-</select>
+      <select
+        [disabled]="isEdit()"
+        (change)="onTenantInput($any($event.target).value)">
+        @for (t of activeTenants(); track t.id) {
+          <option [value]="t.id" [selected]="t.id === tenant()">{{ t.name }}</option>
+        }
+      </select>
     </div>
 
     <div class="form-group full">
@@ -35,6 +41,7 @@
       <input
         type="text"
         style="font-family:var(--mono)"
+        [disabled]="isEdit()"
         [value]="slug()"
         (input)="onSlugInput($any($event.target).value)" />
       <div class="hint">
@@ -42,7 +49,7 @@
         @if (slugConflicts()) {
           <br>
           <span style="color:var(--red);font-weight:700">
-            ⚠ Slug "{{ shownSlug() }}" already used in {{ activeTenants().length ? '' : '' }}{{ tenant() }}.
+            ⚠ Slug "{{ shownSlug() }}" already used in {{ tenant() }}.
           </span>
         }
       </div>
@@ -80,5 +87,5 @@
   </div>
 
   <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>
-  <button modalFooter class="btn" (click)="onSave()">Create Job &amp; open in Builder →</button>
+  <button modalFooter class="btn" (click)="onSave()">{{ saveLabel() }}</button>
 </ei-modal-shell>

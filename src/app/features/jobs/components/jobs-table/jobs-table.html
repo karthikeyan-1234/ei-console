@@ -1,19 +1,19 @@
 <div class="ctable">
   <div
     class="ctable-row head"
-    style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr .5fr">
+    style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr 1.1fr">
     <div>JOB</div>
     <div>STATUS</div>
     <div>TRIGGER</div>
     <div>LAST RUN</div>
     <div>NEXT RUN</div>
-    <div></div>
+    <div>ACTIONS</div>
   </div>
 
   @for (job of rows(); track job.id) {
     <div
       class="ctable-row"
-      style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr .5fr;cursor:pointer"
+      style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr 1.1fr;cursor:pointer"
       (click)="onRowClick(job)">
 
       <div>
@@ -39,7 +39,11 @@
       <div>{{ job.trigger }}</div>
       <div>{{ job.lastRun }}</div>
       <div>{{ job.next }}</div>
-      <div style="text-align:center;color:var(--muted)">⋮</div>
+
+      <div style="display:flex;gap:4px" (click)="$event.stopPropagation()">
+        <button class="btn btn-outline btn-xs" (click)="onEdit($event, job)">Edit</button>
+        <button class="btn-ghost btn btn-xs" style="color:var(--red)" (click)="onRemove($event, job)">✕</button>
+      </div>
     </div>
   } @empty {
     <div style="padding:24px;text-align:center;color:var(--muted);font-size:12px">

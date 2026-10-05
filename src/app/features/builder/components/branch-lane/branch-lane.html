@@ -6,11 +6,16 @@
     <span class="lh-count">{{ childrenCount() }}</span>
     <button
       class="lane-delete"
-      disabled
-      title="Remove this lane (coming in a later segment)">✕</button>
+      title="Remove this lane"
+      (click)="onRemoveLane()">✕</button>
   </div>
 
-  <ei-pipeline-node [task]="branch()" [suppressChildren]="true" [jobId]="jobId()" />
+  <ei-pipeline-node
+    [task]="branch()"
+    [suppressChildren]="true"
+    [jobId]="jobId()"
+    [nodePath]="{ level: 'top', topIdx: idx() }"
+    [showRemove]="false" />
 
   @for (child of children(); track child.id; let i = $index) {
     <div
@@ -22,11 +27,12 @@
       (drop)="onSlotDrop($event, i)"></div>
 
     <ei-pipeline-node
-  [task]="child"
-  dragKind="child"
-  [dragTopIdx]="idx()"
-  [dragChildIdx]="i"
-  [jobId]="jobId()" />
+      [task]="child"
+      dragKind="child"
+      [dragTopIdx]="idx()"
+      [dragChildIdx]="i"
+      [jobId]="jobId()"
+      [nodePath]="{ level: 'branch-child', topIdx: idx(), childIdx: i }" />
   }
 
   <div
@@ -36,5 +42,10 @@
     [attr.data-lane-branch-idx]="idx()"
     (dragover)="onSlotDragOver($event)"
     (drop)="onSlotDrop($event, childrenCount())"></div>
+
+  <button
+    class="btn btn-outline btn-sm"
+    style="margin-top:6px;font-size:10px"
+    (click)="onAddChild()">+ Add child</button>
 
 </div>

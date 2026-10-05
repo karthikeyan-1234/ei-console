@@ -16,11 +16,10 @@
     <span class="bh-count">{{ laneCountLabel() }}</span>
 
     <div class="bh-actions">
-      <button disabled title="Coming in a later segment">+ Add lane</button>
+      <button (click)="onAddLane()">+ Add lane</button>
       <button
-        disabled
-        title="Coming in a later segment"
-        style="color:#b91c1c;opacity:.5">Remove fork</button>
+        style="color:#b91c1c"
+        (click)="onRemoveFork()">Remove fork</button>
     </div>
   </div>
 

@@ -1,17 +1,13 @@
 <div class="cv-head">
   <div>
     <h3>Scatter-Gather</h3>
-    <div class="sub">500 items × 2 sub-tasks · bounded by Redis</div>
-  </div>
-  <div class="actions">
-    <button class="btn btn-success btn-sm" (click)="onStart()">▶ Run Simulation</button>
-    <button class="btn btn-outline btn-sm" (click)="onPause()">⏸ Pause</button>
-    <button class="btn btn-outline btn-sm" (click)="onReset()">↺ Reset</button>
+    <div class="sub">Fan-out / fan-in items · bounded by the connection's Redis token bucket</div>
   </div>
 </div>
 
 <div class="sg-banner">
-  <b>Live scatter-gather:</b> bounded fan-out with Redis token bucket.
+  <b>Bounded fan-out</b> — the Redis token bucket and distributed concurrency limiter
+  apply at the connection layer. Every item is a row in <code>scatter_gather_items</code>.
 </div>
 
 <!-- Limiter panel -->
@@ -154,8 +150,6 @@
             <button
               class="btn btn-danger btn-xs"
               (click)="replay(item.id, item.task)">↻ Replay</button>
-          } @else if (item.status === 'Dispatched') {
-            <span style="color:var(--muted);font-size:10px">cancel</span>
           } @else {
             <span style="color:var(--muted);font-size:10px">—</span>
           }

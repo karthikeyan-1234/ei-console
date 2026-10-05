@@ -22,15 +22,19 @@ export class JobsTableComponent {
 
   readonly rows = input.required<Job[]>();
   readonly jobOpened = output<number>();
+  readonly jobEdited = output<Job>();
+  readonly jobRemoved = output<Job>();
 
-  readonly tenantLabel = computed(() => this.tenants.labelFor(this.tenants.activeTenantId()));
+  readonly tenantLabel = computed(() =>
+    this.tenants.labelFor(this.tenants.activeTenantId()),
+  );
 
   statusVariant(job: Job): StatusVariant {
     switch (job.status) {
       case 'Running': return 'running';
       case 'Paused':  return 'paused';
       case 'Draft':   return 'pending';
-      default:        return 'success';   // 'Active'
+      default:        return 'success';
     }
   }
 
@@ -69,5 +73,15 @@ export class JobsTableComponent {
 
   onRowClick(job: Job): void {
     this.jobOpened.emit(job.id);
+  }
+
+  onEdit(event: MouseEvent, job: Job): void {
+    event.stopPropagation();
+    this.jobEdited.emit(job);
+  }
+
+  onRemove(event: MouseEvent, job: Job): void {
+    event.stopPropagation();
+    this.jobRemoved.emit(job);
   }
 }

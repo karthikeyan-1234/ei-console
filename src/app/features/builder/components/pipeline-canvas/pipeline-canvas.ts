@@ -18,6 +18,7 @@ import { JsonOverlayService } from '../../../../shared/services/json-overlay.ser
 import { PipelineNodeComponent } from '../pipeline-node/pipeline-node';
 import { ForkBlockComponent } from '../fork-block/fork-block';
 import { ChildDropEvent } from '../branch-lane/branch-lane';
+import { InsertPointService } from '../../services/insert-point.service';
 
 @Component({
   selector: 'ei-pipeline-canvas',
@@ -31,51 +32,65 @@ export class PipelineCanvasComponent {
   private readonly jsonFlow = inject(JsonFlowService);
   private readonly jsonOverlay = inject(JsonOverlayService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly insertPoint = inject(InsertPointService);
 
   readonly job = input.required<Job>();
 
   readonly pipeline = computed<PipelineTask[]>(() => this.job().pipeline);
-
   readonly blocks = computed<PipelineBlock[]>(() =>
     groupPipelineIntoBlocks(this.pipeline()),
   );
-
   readonly lastSlotIdx = computed(() => this.blocks().length);
-
   readonly dropTargetsVisible = this.dragState.dropTargetsVisible;
-
   readonly treeRef = viewChild<ElementRef<HTMLElement>>('pipelineTree');
+  readonly arrowIdx = this.insertPoint.arrowIdx;
 
-  constructor() {
-    // Recompute the JSON flow whenever the selected job changes, and hide
-    // any visible hover overlay while we swap jobs.
-    effect(() => {
-      const j = this.job();
-      this.jsonOverlay.hide();
-      this.jsonFlow.recompute(j);
-    });
+constructor() {
+  // Recompute the JSON flow whenever the selected job changes, and hide
+  // any visible hover overlay while we swap jobs.
+  effect(() => {
+    const j = this.job();
+    this.jsonOverlay.hide();
+    this.jsonFlow.recompute(j);
+  });
 
-    // Attach a window-level dragover listener only while a drag is active.
-    // HTML5 DnD fires dragover continuously during a drag but suppresses
-    // mousemove on the source, so this is the only place we can read the
-    // cursor position to drive auto-scroll.
-    effect((onCleanup) => {
-      if (!this.dragState.active()) return;
+  // Attach a window-level dragover listener only while a drag is active.
+  // HTML5 DnD fires dragover continuously during a drag but suppresses
+  // mousemove on the source, so this is the only place we can read the
+  // cursor position to drive auto-scroll.
+  effect((onCleanup) => {
+    if (!this.dragState.active()) return;
 
-      const handler = (event: DragEvent) => this.handleGlobalDragOver(event);
-      window.addEventListener('dragover', handler, true);
-      onCleanup(() => window.removeEventListener('dragover', handler, true));
-    });
+    const scrollHandler = (event: DragEvent) =>
+      this.handleGlobalDragOver(event);
 
-    // Hide the hover overlay the moment a drag begins — the overlay would
-    // otherwise hang in place following neither the cursor nor the drag.
-    effect(() => {
-      if (this.dragState.active()) this.jsonOverlay.hide();
-    });
+    window.addEventListener('dragover', scrollHandler, true);
+    onCleanup(() => window.removeEventListener('dragover', scrollHandler, true));
+  });
 
-    // Hide the overlay if the canvas unmounts (route change, job deletion).
-    this.destroyRef.onDestroy(() => this.jsonOverlay.hide());
-  }
+  // Safety net for drags that end without a drop — for example, the user
+  // releases the mouse outside any drop target, or Angular re-renders the
+  // source mid-drag so its own `dragend` binding never fires. The document-
+  // level listener is registered for the duration of the drag and clears
+  // the state unconditionally.
+  effect((onCleanup) => {
+    if (!this.dragState.active()) return;
+
+    const endHandler = () => this.dragState.end();
+
+    document.addEventListener('dragend', endHandler, true);
+    onCleanup(() => document.removeEventListener('dragend', endHandler, true));
+  });
+
+  // Hide the hover overlay the moment a drag begins — the overlay would
+  // otherwise hang in place following neither the cursor nor the drag.
+  effect(() => {
+    if (this.dragState.active()) this.jsonOverlay.hide();
+  });
+
+  // Hide the overlay if the canvas unmounts (route change, job deletion).
+  this.destroyRef.onDestroy(() => this.jsonOverlay.hide());
+}
 
   private handleGlobalDragOver(event: DragEvent): void {
     const tree = this.treeRef()?.nativeElement;
@@ -115,21 +130,27 @@ export class PipelineCanvasComponent {
     event.preventDefault();
 
     const kind = this.dragState.kind();
+
     if (kind === 'top') {
       const sourceIdx = this.dragState.sourceTopIdx();
-      if (sourceIdx === null) return;
-      this.applyTopLevelMove(sourceIdx, slotIdx);
-      return;
-    }
-
-    if (kind === 'fork') {
+      if (sourceIdx !== null) this.applyTopLevelMove(sourceIdx, slotIdx);
+    } else if (kind === 'fork') {
       const startIdx = this.dragState.sourceTopIdx();
       const endIdx = this.dragState.sourceEndIdx();
-      if (startIdx === null || endIdx === null) return;
-      this.applyForkMove(startIdx, endIdx, slotIdx);
-      return;
+      if (startIdx !== null && endIdx !== null) {
+        this.applyForkMove(startIdx, endIdx, slotIdx);
+      }
     }
+
+    // The drop marks the end of this drag. Clearing the state here means we
+    // don't depend on the source element's `dragend` firing — which it won't
+    // if Angular has already re-rendered and destroyed the source.
+    this.dragState.end();
   }
+
+  onArrowClick(idx: number): void {
+  this.insertPoint.toggle(idx);
+}
 
   private applyTopLevelMove(sourceIdx: number, slotIdx: number): void {
     const job = this.job();
@@ -180,17 +201,20 @@ export class PipelineCanvasComponent {
   }
 
   onChildDrop(event: ChildDropEvent): void {
-  const srcBranchIdx = this.dragState.sourceTopIdx();
-  const srcChildIdx = this.dragState.sourceChildIdx();
-  if (srcBranchIdx === null || srcChildIdx === null) return;
+    const srcBranchIdx = this.dragState.sourceTopIdx();
+    const srcChildIdx = this.dragState.sourceChildIdx();
 
-  this.applyChildMove(
-    srcBranchIdx,
-    srcChildIdx,
-    event.targetBranchIdx,
-    event.targetChildIdx,
-  );
-}
+    if (srcBranchIdx !== null && srcChildIdx !== null) {
+      this.applyChildMove(
+        srcBranchIdx,
+        srcChildIdx,
+        event.targetBranchIdx,
+        event.targetChildIdx,
+      );
+    }
+
+    this.dragState.end();
+  }
 
 private applyChildMove(
   srcBranchIdx: number,

@@ -12,11 +12,10 @@ type FilterValue = 'all' | 'dispatched' | 'failed' | 'queued';
   selector: 'ei-scatter-gather-view',
   imports: [StatusBadgeComponent],
   templateUrl: './scatter-gather-view.html',
-})  
+})
 export class ScatterGatherViewComponent {
   private readonly sg = inject(ScatterGatherService);
 
-  // Direct passthroughs from the service
   readonly running = this.sg.running;
   readonly completed = this.sg.completed;
   readonly dispatched = this.sg.dispatched;
@@ -33,7 +32,6 @@ export class ScatterGatherViewComponent {
   readonly totalUnits = this.sg.totalUnits;
   readonly filteredItems = this.sg.filteredItems;
 
-  // Limiter bar widths
   readonly tokensPct = computed(() =>
     this.tokensMax() ? (this.tokens() / this.tokensMax()) * 100 : 0,
   );
@@ -44,31 +42,16 @@ export class ScatterGatherViewComponent {
     this.rps() ? Math.min(100, (this.rpsThisSecond() / this.rps()) * 100) : 0,
   );
 
-  // Fan-out bar segment widths
   readonly completedPct = computed(() => this.pctOf(this.completed()));
   readonly dispatchedPct = computed(() => this.pctOf(this.dispatched()));
   readonly failedPct = computed(() => this.pctOf(this.failed()));
   readonly queuedPct = computed(() => this.pctOf(this.queued()));
 
-  // Throttle indicators on the limiter cards
   readonly tokensThrottled = computed(() => this.tokens() < 20);
   readonly concurrencyThrottled = computed(() => this.dispatched() >= this.maxConcurrent());
   readonly rpsThrottled = computed(() => this.rpsThisSecond() >= this.rps());
 
-  // Header pill
   readonly allLabel = computed(() => `All (${this.totalUnits()})`);
-
-  onStart(): void {
-    this.sg.start();
-  }
-
-  onPause(): void {
-    this.sg.pause();
-  }
-
-  onReset(): void {
-    this.sg.reset();
-  }
 
   setFilter(f: FilterValue): void {
     this.sg.setFilter(f);

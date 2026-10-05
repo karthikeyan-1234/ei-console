@@ -8,6 +8,9 @@
       (click)="onSelect(j)">
 
       <div class="bj-name">
+        @if (isRunning(j)) {
+          <span class="status-dot blue" style="margin-right:4px"></span>
+        }
         {{ j.name }}
         <span style="font-size:9px;background:#eff6ff;color:#1d4ed8;padding:1px 5px;border-radius:3px;font-weight:700">
           {{ versionLabel(j) }}

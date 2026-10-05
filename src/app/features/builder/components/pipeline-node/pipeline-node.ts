@@ -19,7 +19,10 @@ import { JsonOverlayService } from '../../../../shared/services/json-overlay.ser
 
 import { TaskEditorService } from '../../services/task-editor.service';
 
-
+import {
+  NodePath,
+  PipelineMutationService,
+} from '../../services/pipeline-mutation.service';
 
 @Component({
   selector: 'ei-pipeline-node',
@@ -37,6 +40,8 @@ private readonly jsonOverlay = inject(JsonOverlayService);
 
   private readonly taskEditor = inject(TaskEditorService);
 
+  private readonly mutations = inject(PipelineMutationService);
+
   /**
  * When true, the branch's own children list is not rendered inside the card.
  * Used by the fork-lane layout, where children are rendered as siblings of
@@ -45,6 +50,18 @@ private readonly jsonOverlay = inject(JsonOverlayService);
   readonly suppressChildren = input<boolean>(false);
 
   readonly jobId = input.required<number>();
+
+  /**
+ * The node's location in the job's pipeline. Null when the node has no
+ * identifying path (rare; sub-task rows inherit their parent's path).
+ */
+readonly nodePath = input<NodePath | null>(null);
+
+/**
+ * Whether to render the Remove button. Defaults to true. The lane passes
+ * false for its branch card — the lane header's ✕ handles removal there.
+ */
+readonly showRemove = input<boolean>(true);
 
 
   /**
@@ -238,6 +255,27 @@ readonly isDragging = computed(
   () => this.dragState.sourceTaskId() === this.task().id,
 );
 
+
+readonly showRemoveButton = computed(
+  () => this.showRemove() && this.nodePath() !== null,
+);
+
+readonly showAddChild = computed(
+  () => this.task().type === 'Branch' && this.nodePath() !== null,
+);
+
+readonly showAddSubTask = computed(
+  () => this.task().type === 'Transform' && this.nodePath() !== null,
+);
+
+readonly hasSubTasks = computed(
+  () => this.task().type === 'Transform' && (this.task() as TransformTask).subtasks?.length ? true : false,
+);
+
+readonly hasChildren = computed(
+  () => this.task().type === 'Branch' && (this.task() as BranchTask).children?.length ? true : false,
+);
+
 onDragStart(event: DragEvent): void {
   const kind = this.dragKind();
   if (kind === null) {
@@ -333,5 +371,45 @@ onEditBranchChild(event: MouseEvent, childId: string): void {
   if (t.type !== 'Branch') return;
   const child = (t.children ?? []).find(c => c.id === childId);
   if (child) this.taskEditor.openForTask(this.jobId(), child);
+}
+
+onRemove(): void {
+  const path = this.nodePath();
+  if (!path) return;
+  void this.mutations.removeTask(this.jobId(), path);
+}
+
+onAddSubTask(): void {
+  const path = this.nodePath();
+  if (!path || path.level !== 'top') return;
+  void this.mutations.addSubTask(this.jobId(), path.topIdx);
+}
+
+onRemoveSubTask(event: MouseEvent, subIdx: number): void {
+  event.stopPropagation();
+  const path = this.nodePath();
+  if (!path || path.level !== 'top') return;
+  void this.mutations.removeTask(this.jobId(), {
+    level: 'sub',
+    topIdx: path.topIdx,
+    subIdx,
+  });
+}
+
+onAddChild(): void {
+  const path = this.nodePath();
+  if (!path || path.level !== 'top') return;
+  void this.mutations.addChild(this.jobId(), path.topIdx);
+}
+
+onRemoveChild(event: MouseEvent, childIdx: number): void {
+  event.stopPropagation();
+  const path = this.nodePath();
+  if (!path || path.level !== 'top') return;
+  void this.mutations.removeTask(this.jobId(), {
+    level: 'branch-child',
+    topIdx: path.topIdx,
+    childIdx,
+  });
 }
 }
