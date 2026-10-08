@@ -5,6 +5,7 @@ import { RateLimitService,  WatermarkService, DlqService, ExecutionService, Scat
 import { TenantService } from '../../../core/services/tenant.service';
 import { ConnectionService } from '../../../core/services';
 import { JobService } from '../../../core/services/job.service';
+import { StoredCredentialService } from '../../../core/services/stored-credential.service';
 
 @Component({
   selector: 'ei-shell',
@@ -21,25 +22,26 @@ export class ShellComponent {
   private readonly executions = inject(ExecutionService);
   private readonly dlq = inject(DlqService);
   private readonly scatter = inject(ScatterGatherService);
+    private readonly storedCreds = inject(StoredCredentialService);
 
   constructor() {
     void this.boot();
   }
 
-  private async boot(): Promise<void> {
-    // Tenants first — other services' scoped computeds key off activeTenantId.
-    await this.tenants.load();
+private async boot(): Promise<void> {
+  await this.tenants.load();
 
-    await Promise.all([
-      this.jobs.load(),
-      this.connections.load(),
-      this.auth.load(),
-      this.rateLimits.load(),
-      this.watermarks.load(),
-      this.executions.load(),
-      this.dlq.load(),
-    ]);
+  await Promise.all([
+    this.jobs.load(),
+    this.connections.load(),
+    this.auth.load(),
+    this.rateLimits.load(),
+    this.watermarks.load(),
+    this.executions.load(),
+    this.dlq.load(),
+    this.storedCreds.load(),
+  ]);
 
-    this.scatter.reset();
-  }
+  this.scatter.reset();
+}
 }

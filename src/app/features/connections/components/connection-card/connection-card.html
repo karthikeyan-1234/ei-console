@@ -12,7 +12,7 @@
     <div>
       <b>{{ urlLabel() }}:</b>
       <code style="font-family:var(--mono);font-size:10.5px;background:#f1f5f9;padding:1px 4px;border-radius:3px;word-break:break-all">
-        {{ connection().baseUrl }}
+        {{ endpointDisplay() }}
       </code>
     </div>
     <div>
@@ -26,7 +26,7 @@
         </span>
       }
     </div>
-    <div><b>Timeout:</b> {{ connection().timeout || 30 }}{{ isSqlServer() ? ' s' : ' ms' }}</div>
+    <div><b>Timeout:</b> {{ connection().timeout || 30 }}{{ timeoutUnit() }}</div>
   </div>
 
   <div class="cc-actions">

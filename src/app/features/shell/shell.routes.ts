@@ -63,6 +63,13 @@ export const SHELL_ROUTES: Routes = [
         loadComponent: () =>
           import('../builder/views/builder-view/builder-view').then(m => m.BuilderViewComponent),
       },
+      {
+        path: 'credentials',
+        loadComponent: () =>
+          import('../credentials/views/credentials-view/credentials-view').then(
+            m => m.CredentialsViewComponent,
+          ),
+      },
     ],
   },
 ];

@@ -26,6 +26,11 @@ import { FakeDlqApi } from './fake/fake-dlq.api';
 import { environment } from '../../../environments/environment';
 import { HttpAuthProfileApi, HttpConnectionApi, HttpDlqApi, HttpExecutionApi, HttpJobApi, HttpRateLimitApi, HttpScatterItemApi, HttpTaskLogApi, HttpTenantApi, HttpWatermarkApi } from './fake/http';
 
+
+import { STORED_CREDENTIAL_API } from './stored-credential.api';
+import { FakeStoredCredentialApi } from './fake/fake-stored-credential.api';
+import { HttpStoredCredentialApi } from './http/http-stored-credential.api';
+
 /**
  * Returns the full provider list for every EI API resource.
  *
@@ -48,5 +53,6 @@ export function provideEiApis(): Provider[] {
     { provide: TASK_LOG_API,     useClass: useFake ? FakeTaskLogApi      : HttpTaskLogApi      },
     { provide: SCATTER_ITEM_API, useClass: useFake ? FakeScatterItemApi  : HttpScatterItemApi  },
     { provide: DLQ_API,          useClass: useFake ? FakeDlqApi          : HttpDlqApi          },
+    { provide: STORED_CREDENTIAL_API, useClass: useFake ? FakeStoredCredentialApi : HttpStoredCredentialApi },
   ];
 }

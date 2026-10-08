@@ -23,6 +23,8 @@ export class AuthCardComponent {
       case 'ApiKey':                    return '🗝';
       case 'MutualTls':                 return '🔒';
       case 'SqlServerConnectionString': return '🗄';
+      case 'FtpCredentials':            return '📁';
+      case 'SftpKeyCredentials':        return '📂';
       default:                          return '🛡';
     }
   });
@@ -35,26 +37,32 @@ export class AuthCardComponent {
       case 'WsSecurityUsernameToken':   return 'WS-Security UsernameToken';
       case 'MutualTls':                 return 'Mutual TLS';
       case 'SqlServerConnectionString': return 'SQL Server Connection String';
+      case 'FtpCredentials':            return 'FTP Credentials';
+      case 'SftpKeyCredentials':        return 'SFTP Key Credentials';
       default:                          return this.profile().type;
     }
   });
 
   /**
-   * True when the profile is a SQL Server credential stored inline. Cards in
-   * this state display a warning badge so operators can see at a glance which
-   * connections carry plain-text credentials.
+   * True when a profile stores credentials inline rather than in Key Vault.
+   * Drives the red "🔓 Inline" warning badge on the card.
    */
-  readonly isInlineCredential = computed(
-    () =>
-      this.profile().type === 'SqlServerConnectionString' &&
-      this.profile().credentialStorageMode === 'Inline',
+  readonly isInlineCredential = computed(() =>
+    this.profile().credentialStorageMode === 'Inline',
   );
 
-  /** A masked preview of the server host, safe to render on the card. */
+  /** A safe hint of what's inside the profile — server for SQL, username for FTP/SFTP. */
   readonly inlineServerHint = computed(() => {
-    const cs = this.profile().inlineConnectionString ?? '';
-    const match = cs.match(/(?:^|;)\s*(?:Server|Data Source)\s*=\s*([^;]+)/i);
-    return match ? match[1].trim() : '';
+    const p = this.profile();
+    if (p.type === 'SqlServerConnectionString') {
+      const cs = p.inlineConnectionString ?? '';
+      const match = cs.match(/(?:^|;)\s*(?:Server|Data Source)\s*=\s*([^;]+)/i);
+      return match ? match[1].trim() : '';
+    }
+    if (p.type === 'FtpCredentials' || p.type === 'SftpKeyCredentials') {
+      return p.username ?? '';
+    }
+    return '';
   });
 
   readonly tenantLabel = computed(() =>

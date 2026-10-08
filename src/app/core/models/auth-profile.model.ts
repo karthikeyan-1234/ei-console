@@ -4,19 +4,25 @@ export type AuthType =
   | 'ApiKey'
   | 'WsSecurityUsernameToken'
   | 'MutualTls'
-  | 'SqlServerConnectionString';
+  | 'SqlServerConnectionString'
+  | 'FtpCredentials'
+  | 'SftpKeyCredentials';
 
 /**
- * How a SQL Server credential is stored.
+ * How a SQL Server / FTP / SFTP credential is stored.
  *
- *   'KeyVault' — only a Key Vault secret URI is stored. The credential portion
- *                of the connection string lives in the vault.
- *   'Inline'   — the full connection string, including username and password,
- *                is stored directly on the profile row. Not recommended for
- *                production. Use only inside a trusted private network with
- *                restricted access, and rotate credentials on a short cycle.
+ *   'KeyVault'          — only a Key Vault secret URI is stored; the credential
+ *                         itself lives in the vault.
+ *   'StoredCredential'  — the credential is written into EI's own credential
+ *                         store (see StoredCredential). Recommended over
+ *                         'Inline' because it lives in one place, is
+ *                         independently rotatable, and will be encrypted at
+ *                         rest in a future delivery.
+ *   'Inline'            — the credential lives directly on the profile row.
+ *                         Kept for backward compatibility. Use only for
+ *                         temporary setups inside a trusted private network.
  */
-export type CredentialStorageMode = 'KeyVault' | 'Inline';
+export type CredentialStorageMode = 'KeyVault' | 'StoredCredential' | 'Inline';
 
 export interface AuthProfile {
   id: string;
@@ -40,8 +46,31 @@ export interface AuthProfile {
   thumbprint?: string;
 
   // Populated for SqlServerConnectionString only.
-  // The storage mode decides which of the two following fields is set.
   credentialStorageMode?: CredentialStorageMode;
   connectionStringSecretRef?: string;    // when mode === 'KeyVault'
   inlineConnectionString?: string;       // when mode === 'Inline'
+
+  // Populated for FtpCredentials / SftpKeyCredentials.
+  /** Login username. Used by both FTP and SFTP auth types. */
+  username?: string;
+
+  /** FtpCredentials, Key Vault mode. */
+  ftpPasswordSecretRef?: string;
+  /** FtpCredentials, Inline mode. */
+  ftpInlinePassword?: string;
+
+  /** SftpKeyCredentials, Key Vault mode. */
+  sftpPrivateKeySecretRef?: string;
+  sftpPassphraseSecretRef?: string;
+
+  /** SftpKeyCredentials, Inline mode. PEM-encoded private key text. */
+  sftpInlinePrivateKey?: string;
+  sftpInlinePassphrase?: string;
+
+  /**
+   * For SQL Server / FTP / SFTP profiles only. When the storage mode is
+   * 'StoredCredential', this id points into EI's own credential store.
+   * Undefined for all other modes.
+   */
+  storedCredentialId?: string;
 }

@@ -44,6 +44,14 @@ export const SEED_CONNECTIONS: Connection[] = [
     baseUrl:'Server=tcp:legacy-reporting.internal,1433;Database=Reports;Encrypt=True;TrustServerCertificate=True;',
     tenant:'broker-uae', authProfile:'auth-8', status:'Active', timeout:60,
     headers:'' },
+      { id:'conn-12', name:'Legacy File Server', provider:'InsureLiv Internal', protocol:'Ftp',
+    baseUrl:'ftp.insureliv-internal.com', port:21,
+    tenant:'broker-uae', authProfile:'auth-9', status:'Active', timeout:30,
+    headers:'' },
+  { id:'conn-13', name:'Partner File Exchange', provider:'Reinsurer Exchange', protocol:'Sftp',
+    baseUrl:'sftp.partner-re.com', port:22,
+    tenant:'broker-uae', authProfile:'auth-10', status:'Active', timeout:60,
+    headers:'' },
 ];
 
 export const SEED_AUTH_PROFILES: AuthProfile[] = [
@@ -97,6 +105,50 @@ export const SEED_AUTH_PROFILES: AuthProfile[] = [
     inlineConnectionString:
       'Server=tcp:legacy-reporting.internal,1433;Database=Reports;User ID=ei_reader;Password=ReadOnly_2026!;Encrypt=True;TrustServerCertificate=True;',
     tenant: 'broker-uae',
+  },
+    {
+    id: 'auth-9', name: 'FTP · Legacy File Server', type: 'FtpCredentials',
+    credentialStorageMode: 'KeyVault',
+    username: 'ei_worker',
+    ftpPasswordSecretRef: 'https://insureliv-kv.vault.azure.net/secrets/ei-ftp-password',
+    tenant: 'broker-uae',
+  },
+  {
+    id: 'auth-10', name: 'SFTP · Partner File Exchange', type: 'SftpKeyCredentials',
+    credentialStorageMode: 'KeyVault',
+    username: 'ei_sftp',
+    sftpPrivateKeySecretRef: 'https://insureliv-kv.vault.azure.net/secrets/ei-sftp-private-key',
+    sftpPassphraseSecretRef: 'https://insureliv-kv.vault.azure.net/secrets/ei-sftp-passphrase',
+    tenant: 'broker-uae',
+  },
+];
+
+export const SEED_STORED_CREDENTIALS: import('../../models').StoredCredential[] = [
+  {
+    id: 'cred-1',
+    tenant: 'broker-uae',
+    name: 'FTP · Legacy File Server (explicit)',
+    kind: 'FtpPassword',
+    username: 'ei_worker',
+    secret: 'ReadOnly_2026!',
+    notes: 'Rotated 2026-10-01. Plaintext until encryption lands.',
+    encryptionState: 'Plaintext',
+    createdAt: '01 Oct 2026 08:00',
+    updatedAt: '01 Oct 2026 08:00',
+    lastRotatedAt: '01 Oct 2026 08:00',
+  },
+  {
+    id: 'cred-2',
+    tenant: 'broker-uae',
+    name: 'SFTP · Partner File Exchange (explicit)',
+    kind: 'SftpPrivateKey',
+    username: 'ei_sftp',
+    secret: '-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAEbm9uZQAAAAAAAAABAAAAMwAAAAtzc2gtZWQyNTUxOQAAACAQm5f9zN7wW4g0VNhFq5Cz3jWZn2sR4pZ4fL+5T7b0ZAAAAJgV6jHbFeox2xXqMdsV6jHbFeox2xXqMdsV6jHbFeox2wAAAAtzc2gtZWQyNTUxOQAAACAQm5f9zN7wW4g0VNhFq5Cz3jWZn2sR4pZ4fL+5T7b0ZAAAAEBn6mVr2vXJ9E2yjVXfL5c3rGxq1wY2mZ9p3r5c2y4t7aQ==\n-----END OPENSSH PRIVATE KEY-----',
+    secondarySecret: '',
+    notes: 'Reinsurer-issued key. Passphrase stored separately when required.',
+    encryptionState: 'Plaintext',
+    createdAt: '01 Oct 2026 08:05',
+    updatedAt: '01 Oct 2026 08:05',
   },
 ];
 

@@ -3,6 +3,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { DlqService } from '../../../../core/services/dlq.service';
 import { ExecutionService } from '../../../../core/services/execution.service';
 import { ScatterGatherService } from '../../../../core/services/scatter-gather.service';
+import { StoredCredentialService } from '../../../../core/services/stored-credential.service';
 
 @Component({
   selector: 'ei-console-sidebar',
@@ -13,10 +14,12 @@ export class ConsoleSidebarComponent {
   private readonly dlq = inject(DlqService);
   private readonly scatter = inject(ScatterGatherService);
   private readonly executions = inject(ExecutionService);
+  private readonly storedCreds = inject(StoredCredentialService);
 
   readonly dlqCount = this.dlq.pendingCount;
   readonly scatterCount = computed(() =>
     this.scatter.queued() + this.scatter.dispatched(),
   );
   readonly runningExecutions = this.executions.runningCount;
+  readonly plaintextCredentials = this.storedCreds.plaintextCount;
 }

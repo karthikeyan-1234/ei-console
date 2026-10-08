@@ -11,9 +11,7 @@
 
     <div class="form-group full">
       <label>Profile Name</label>
-      <input
-        type="text"
-        [value]="name()"
+      <input type="text" [value]="name()"
         (input)="onNameInput($any($event.target).value)" />
     </div>
 
@@ -26,17 +24,19 @@
         <option value="OAuth2ClientCredentials" [selected]="type() === 'OAuth2ClientCredentials'">
           OAuth2 Client Credentials
         </option>
-        <option value="ApiKey" [selected]="type() === 'ApiKey'">
-          API Key
-        </option>
+        <option value="ApiKey" [selected]="type() === 'ApiKey'">API Key</option>
         <option value="WsSecurityUsernameToken" [selected]="type() === 'WsSecurityUsernameToken'">
           WS-Security UsernameToken
         </option>
-        <option value="MutualTls" [selected]="type() === 'MutualTls'">
-          Mutual TLS
-        </option>
+        <option value="MutualTls" [selected]="type() === 'MutualTls'">Mutual TLS</option>
         <option value="SqlServerConnectionString" [selected]="type() === 'SqlServerConnectionString'">
           SQL Server Connection String
+        </option>
+        <option value="FtpCredentials" [selected]="type() === 'FtpCredentials'">
+          FTP Credentials (username &amp; password)
+        </option>
+        <option value="SftpKeyCredentials" [selected]="type() === 'SftpKeyCredentials'">
+          SFTP Key Credentials (SSH private key)
         </option>
       </select>
     </div>
@@ -50,54 +50,37 @@
         <div class="form-grid">
           <div class="form-group full">
             <label>{{ baseUrlLabel() }}</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().kcBaseUrl"
               (input)="patchForm('kcBaseUrl', $any($event.target).value)" />
           </div>
-
           <div class="form-group">
             <label>Realm</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().realm"
               (input)="patchForm('realm', $any($event.target).value)" />
           </div>
-
           <div class="form-group">
             <label>Client ID</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().clientId"
               (input)="patchForm('clientId', $any($event.target).value)" />
           </div>
-
           <div class="form-group full">
             <label>Client Secret Reference</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().secretRef"
               (input)="patchForm('secretRef', $any($event.target).value)" />
           </div>
-
           <div class="form-group">
             <label>Target Audience</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().audience"
               (input)="patchForm('audience', $any($event.target).value)" />
           </div>
-
           <div class="form-group">
             <label>Scope</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               [value]="form().scope"
               (input)="patchForm('scope', $any($event.target).value)" />
           </div>
@@ -110,7 +93,6 @@
         <div style="padding:10px 12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#166534;line-height:1.5">
           <b>🔒 Mutual TLS Configuration</b> — Client cert &amp; key from Key Vault.
         </div>
-
         <div class="form-grid">
           <div class="form-group full">
             <label>Client Certificate (Key Vault secret URI)</label>
@@ -118,28 +100,24 @@
               [value]="form().certRef"
               (input)="patchForm('certRef', $any($event.target).value)" />
           </div>
-
           <div class="form-group full">
             <label>Client Private Key (Key Vault secret URI)</label>
             <input type="text" style="font-family:var(--mono)"
               [value]="form().keyRef"
               (input)="patchForm('keyRef', $any($event.target).value)" />
           </div>
-
           <div class="form-group full">
             <label>CA Certificate (Key Vault secret URI) — optional</label>
             <input type="text" style="font-family:var(--mono)"
               [value]="form().caRef"
               (input)="patchForm('caRef', $any($event.target).value)" />
           </div>
-
           <div class="form-group full">
             <label>Certificate Password (Key Vault secret URI) — optional</label>
             <input type="text" style="font-family:var(--mono)"
               [value]="form().passRef"
               (input)="patchForm('passRef', $any($event.target).value)" />
           </div>
-
           <div class="form-group">
             <label>Client Certificate Thumbprint (optional)</label>
             <input type="text" style="font-family:var(--mono)"
@@ -150,7 +128,7 @@
       </div>
     }
 
-        @if (showSqlServerBlock()) {
+    @if (showSqlServerBlock()) {
       <div class="form-group full">
         <div style="padding:10px 12px;background:#f5f3ff;border:1px solid #c4b5fd;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#6d28d9;line-height:1.5">
           <b>🗄 SQL Server Connection String</b> — Choose how the credential portion is stored.
@@ -159,50 +137,192 @@
         <div class="form-group full">
           <label>Credential Storage Mode</label>
           <select (change)="onStorageModeInput($any($event.target).value)">
-            <option value="KeyVault" [selected]="storageMode() === 'KeyVault'">
-              Key Vault reference (recommended)
-            </option>
-            <option value="Inline" [selected]="storageMode() === 'Inline'">
-              Inline connection string (username &amp; password)
-            </option>
+            <option value="KeyVault" [selected]="storageMode() === 'KeyVault'">Key Vault reference (recommended)</option>
+            <option value="Inline" [selected]="storageMode() === 'Inline'">Inline connection string (username &amp; password)</option>
           </select>
         </div>
 
         @if (!isInlineMode()) {
           <div class="form-group full">
             <label>Connection String Secret Reference</label>
-            <input
-              type="text"
-              style="font-family:var(--mono)"
+            <input type="text" style="font-family:var(--mono)"
               placeholder="https://vault.azure.net/secrets/..."
               [value]="form().connectionStringSecretRef"
               (input)="patchForm('connectionStringSecretRef', $any($event.target).value)" />
             <div class="hint">
-              Examples: <code>User ID=ei_worker;Password=…;</code> or
-              <code>Authentication=Active Directory Managed Identity;</code>
+              Examples: <code>User ID=ei_worker;Password=…;</code> or <code>Authentication=Active Directory Managed Identity;</code>
             </div>
           </div>
         } @else {
           <div class="form-group full">
             <div style="padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px;font-size:11px;color:#991b1b;line-height:1.6">
               <b>⚠ Warning — credentials stored in plain text</b><br>
-              The username and password will be written to the database and
-              returned in every read of this profile. Only use this mode inside
-              a private network with a trusted access boundary, and rotate the
-              credentials on a short cycle.
+              The username and password will be written to the database.
             </div>
-
             <label>Full Connection String</label>
-            <textarea
-              class="editor-pane"
-              rows="5"
-              style="margin-top:4px"
+            <textarea class="editor-pane" rows="5" style="margin-top:4px"
               placeholder="Server=tcp:host,1433;Database=Db;User ID=user;Password=...;Encrypt=True;"
               [value]="form().inlineConnectionString"
               (input)="patchForm('inlineConnectionString', $any($event.target).value)"></textarea>
-            <div class="hint">
-              Must include <code>Server=</code> or <code>Data Source=</code>, and one of
-              <code>User ID=</code> + <code>Password=</code>, or <code>Authentication=</code>.
+          </div>
+        }
+      </div>
+    }
+
+    @if (showFtpBlock()) {
+      <div class="form-group full">
+        <div style="padding:10px 12px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#115e59;line-height:1.5">
+          <b>📁 FTP Credentials</b> — Username and password for a plain FTP server.
+          Credentials are transmitted in cleartext by the FTP protocol; use FTP only inside a trusted private network.
+        </div>
+
+        <div class="form-group full">
+          <label>Username</label>
+          <input type="text" style="font-family:var(--mono)"
+            [value]="form().username"
+            (input)="patchForm('username', $any($event.target).value)" />
+        </div>
+
+        <div class="form-group full">
+          <label>Credential Storage Mode</label>
+          <select (change)="onStorageModeInput($any($event.target).value)">
+            <option value="KeyVault" [selected]="storageMode() === 'KeyVault'">Key Vault reference (recommended)</option>
+            <option value="Inline" [selected]="storageMode() === 'Inline'">Inline password</option>
+          </select>
+        </div>
+
+        @if (!isInlineMode()) {
+          <div class="form-group full">
+            <label>Password (Key Vault secret URI)</label>
+            <input type="text" style="font-family:var(--mono)"
+              placeholder="https://vault.azure.net/secrets/..."
+              [value]="form().ftpPasswordSecretRef"
+              (input)="patchForm('ftpPasswordSecretRef', $any($event.target).value)" />
+          </div>
+        } @else {
+          <div class="form-group full">
+            <div style="padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px;font-size:11px;color:#991b1b;line-height:1.6">
+              <b>⚠ Warning — password stored in plain text</b><br>
+              The password will be written to the database.
+            </div>
+            <label>Password</label>
+            <input type="password" style="font-family:var(--mono)"
+              [value]="form().ftpInlinePassword"
+              (input)="patchForm('ftpInlinePassword', $any($event.target).value)" />
+          </div>
+        }
+      </div>
+    }
+
+    @if (showSftpBlock()) {
+      <div class="form-group full">
+        <div style="padding:10px 12px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#115e59;line-height:1.5">
+          <b>📂 SFTP Key Credentials</b> — Username and SSH private key.
+          SFTP is SSH-based, so credentials are encrypted in transit.
+        </div>
+
+        <div class="form-group full">
+          <label>Username</label>
+          <input type="text" style="font-family:var(--mono)"
+            [value]="form().username"
+            (input)="patchForm('username', $any($event.target).value)" />
+        </div>
+
+        <div class="form-group full">
+          <label>Credential Storage Mode</label>
+          <select (change)="onStorageModeInput($any($event.target).value)">
+            <option value="KeyVault" [selected]="storageMode() === 'KeyVault'">
+              Key Vault reference (recommended)
+            </option>
+            <option value="StoredCredential" [selected]="storageMode() === 'StoredCredential'">
+              EI credential store (explicit, encryption-ready)
+            </option>
+            <option value="Inline" [selected]="storageMode() === 'Inline'">
+              Inline on this profile (legacy)
+            </option>
+          </select>
+        </div>
+
+@if (storageMode() === 'KeyVault') {
+  <div class="form-group full">
+    <label>Private Key (Key Vault secret URI)</label>
+    <input type="text" style="font-family:var(--mono)"
+      [value]="form().sftpPrivateKeySecretRef"
+      (input)="patchForm('sftpPrivateKeySecretRef', $any($event.target).value)" />
+  </div>
+  <div class="form-group full">
+    <label>Passphrase (Key Vault secret URI) — optional</label>
+    <input type="text" style="font-family:var(--mono)"
+      [value]="form().sftpPassphraseSecretRef"
+      (input)="patchForm('sftpPassphraseSecretRef', $any($event.target).value)" />
+  </div>
+} @else if (storageMode() === 'StoredCredential') {
+  <div class="form-group full">
+    <label>Stored Credential</label>
+    <select (change)="patchForm('storedCredentialId', $any($event.target).value)">
+      <option value="" [selected]="form().storedCredentialId === ''">— Select —</option>
+      @for (c of availableStoredCredentials(); track c.id) {
+        <option [value]="c.id" [selected]="c.id === form().storedCredentialId">
+          {{ c.name }} ({{ c.username }})
+        </option>
+      }
+    </select>
+    @if (availableStoredCredentials().length === 0) {
+      <div class="hint" style="color:#b91c1c">
+        No stored SFTP credentials available. Create one in the Credentials view first.
+      </div>
+    }
+  </div>
+} @else {
+  <div class="form-group full">
+    <div style="padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px;font-size:11px;color:#991b1b;line-height:1.6">
+      <b>⚠ Warning — private key stored in plaintext on the profile</b><br>
+      This mode is kept for backward compatibility. Prefer the EI credential store.
+    </div>
+    <label>Private Key (PEM)</label>
+    <textarea class="editor-pane" rows="8" style="margin-top:4px"
+      [value]="form().sftpInlinePrivateKey"
+      (input)="patchForm('sftpInlinePrivateKey', $any($event.target).value)"></textarea>
+    <div class="form-group" style="margin-top:12px">
+      <label>Passphrase — optional</label>
+      <input type="password" style="font-family:var(--mono)"
+        [value]="form().sftpInlinePassphrase"
+        (input)="patchForm('sftpInlinePassphrase', $any($event.target).value)" />
+    </div>
+  </div>
+}
+
+        @if (!isInlineMode()) {
+          <div class="form-group full">
+            <label>Private Key (Key Vault secret URI)</label>
+            <input type="text" style="font-family:var(--mono)"
+              placeholder="https://vault.azure.net/secrets/..."
+              [value]="form().sftpPrivateKeySecretRef"
+              (input)="patchForm('sftpPrivateKeySecretRef', $any($event.target).value)" />
+          </div>
+          <div class="form-group full">
+            <label>Passphrase (Key Vault secret URI) — optional</label>
+            <input type="text" style="font-family:var(--mono)"
+              [value]="form().sftpPassphraseSecretRef"
+              (input)="patchForm('sftpPassphraseSecretRef', $any($event.target).value)" />
+            <div class="hint">Leave empty if the key is not passphrase-protected.</div>
+          </div>
+        } @else {
+          <div class="form-group full">
+            <div style="padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px;font-size:11px;color:#991b1b;line-height:1.6">
+              <b>⚠ Warning — private key stored in plain text</b><br>
+              The full private key will be written to the database.
+            </div>
+            <label>Private Key (PEM)</label>
+            <textarea class="editor-pane" rows="8" style="margin-top:4px"
+              placeholder="-----BEGIN OPENSSH PRIVATE KEY-----&#10;...&#10;-----END OPENSSH PRIVATE KEY-----"
+              [value]="form().sftpInlinePrivateKey"
+              (input)="patchForm('sftpInlinePrivateKey', $any($event.target).value)"></textarea>
+            <div class="form-group" style="margin-top:12px">
+              <label>Passphrase — optional</label>
+              <input type="password" style="font-family:var(--mono)"
+                [value]="form().sftpInlinePassphrase"
+                (input)="patchForm('sftpInlinePassphrase', $any($event.target).value)" />
             </div>
           </div>
         }

@@ -28,10 +28,12 @@
     <div class="form-group">
       <label>Protocol</label>
       <select (change)="onProtocolInput($any($event.target).value)">
-        <option value="Rest"     [selected]="protocol() === 'Rest'">Rest</option>
-        <option value="Soap"     [selected]="protocol() === 'Soap'">Soap</option>
-        <option value="Json"     [selected]="protocol() === 'Json'">Json</option>
+        <option value="Rest"      [selected]="protocol() === 'Rest'">Rest</option>
+        <option value="Soap"      [selected]="protocol() === 'Soap'">Soap</option>
+        <option value="Json"      [selected]="protocol() === 'Json'">Json</option>
         <option value="SqlServer" [selected]="protocol() === 'SqlServer'">SQL Server</option>
+        <option value="Ftp"       [selected]="protocol() === 'Ftp'">FTP</option>
+        <option value="Sftp"      [selected]="protocol() === 'Sftp'">SFTP</option>
       </select>
     </div>
 
@@ -46,6 +48,21 @@
         <div class="hint">{{ baseUrlHint() }}</div>
       }
     </div>
+
+    @if (isFileTransfer()) {
+      <div class="form-group">
+        <label>Port</label>
+        <input
+          type="number"
+          min="1"
+          max="65535"
+          [value]="port() ?? defaultPortFor() ?? ''"
+          (input)="onPortInput($any($event.target).value)" />
+        <div class="hint">
+          Default: <code>{{ defaultPortFor() }}</code>
+        </div>
+      </div>
+    }
 
     <div class="form-group">
       <label>Tenant Scope</label>
@@ -67,14 +84,14 @@
     </div>
 
     <div class="form-group">
-      <label>{{ isSqlServer() ? 'Query Timeout (seconds)' : 'Timeout (ms)' }}</label>
+      <label>{{ timeoutLabel() }}</label>
       <input
         type="number"
-        [value]="isSqlServer() ? timeout() : timeout()"
+        [value]="timeout()"
         (input)="onTimeoutInput($any($event.target).value)" />
     </div>
 
-    @if (!isSqlServer()) {
+    @if (isHttpProtocol()) {
       <div class="form-group full">
         <label>Default Headers (JSON)</label>
         <textarea

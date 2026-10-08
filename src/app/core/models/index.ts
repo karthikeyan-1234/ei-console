@@ -13,3 +13,4 @@ export * from './dlq-item.model';
 export * from './json-flow.model';
 export * from './scatter-state.model';
 export * from './toast.model';
+export * from './stored-credential.model';
