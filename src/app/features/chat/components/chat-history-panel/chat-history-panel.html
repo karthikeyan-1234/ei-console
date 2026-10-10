@@ -1,0 +1,43 @@
+<!-- Scrim — visible only on narrow screens; the CSS hides it above 900px. -->
+@if (open()) {
+  <div class="chat-history-scrim" (click)="onScrimClick()"></div>
+}
+
+<div class="chat-history-panel" [class.open]="open()">
+
+  <div class="chat-history-header">
+    <div class="chat-history-title">Conversations</div>
+    <button
+      type="button"
+      class="chat-history-new"
+      (click)="onNewChat()"
+      title="Start a new conversation">
+      + New
+    </button>
+  </div>
+
+  <div class="chat-history-scroll">
+
+    @if (isEmpty()) {
+      <div style="padding:24px 12px;text-align:center;color:var(--chat-text-dim);font-size:11px;line-height:1.6">
+        No conversations yet.<br>
+        Send a message to start one.
+      </div>
+    }
+
+    @for (group of groups(); track group.key) {
+      <div class="chat-history-section">
+        <div class="chat-history-section-label">{{ group.label }}</div>
+
+        @for (s of group.items; track s.id) {
+          <ei-chat-history-item
+            [session]="s"
+            [isActive]="s.id === activeSessionId()"
+            (selected)="onSelect($event)"
+            (renamed)="onRename($event)" />
+        }
+      </div>
+    }
+
+  </div>
+</div>

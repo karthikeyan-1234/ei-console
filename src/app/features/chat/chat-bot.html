@@ -1,0 +1,9 @@
+@if (showWindow()) {
+  <ei-chat-window
+    [closing]="isClosing()"
+    (closed)="onWindowClosed()"
+    (historyToggled)="onHistoryToggled()"
+    (newChatRequested)="onNewChatRequested()" />
+} @else {
+  <ei-chat-bubble (opened)="onBubbleClicked()" />
+}

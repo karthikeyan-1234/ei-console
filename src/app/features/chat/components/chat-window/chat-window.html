@@ -1,0 +1,62 @@
+<div class="chat-window" [class.closing]="closing()">
+
+  <!-- Header -->
+  <div class="chat-window-header">
+
+    <button
+      type="button"
+      class="chat-header-btn"
+      [class.active]="isHistoryOpen()"
+      (click)="onToggleHistory()"
+      title="Toggle chat history"
+      aria-label="Toggle chat history">
+      ☰
+    </button>
+
+    <div class="chat-window-title">
+      <svg class="robot-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <g class="robot-head">
+          <rect class="robot-face" x="20" y="30" width="60" height="52" rx="20" />
+          <circle class="robot-eye-left"  cx="39" cy="53" r="5" />
+          <circle class="robot-eye-right" cx="61" cy="53" r="5" />
+          <rect class="robot-mouth" x="43" y="66" width="14" height="2.5" rx="1.25" />
+        </g>
+      </svg>
+      EI <span>Assistant</span>
+    </div>
+
+    <div class="chat-window-subtitle">
+      {{ isThinking() ? 'Thinking…' : 'Ready' }}
+    </div>
+
+    <div class="chat-header-actions">
+      <button
+        type="button"
+        class="chat-header-btn"
+        (click)="onClose()"
+        title="Close chat"
+        aria-label="Close chat">✕</button>
+    </div>
+  </div>
+
+  <!-- Body -->
+  <div class="chat-window-body">
+
+    <div class="chat-main" [class.with-history]="isHistoryOpen()">
+      <ei-chat-message-list
+        [messages]="messages()"
+        [isThinking]="isThinking()" />
+
+      <ei-chat-composer
+  [disabled]="isThinking()"
+  (newChat)="onNewChatRequested()" />
+    </div>
+
+    <ei-chat-history-panel
+      [open]="isHistoryOpen()"
+      (closed)="onHistoryClosed()"
+      (sessionPicked)="onSessionPicked()" />
+
+  </div>
+
+</div>

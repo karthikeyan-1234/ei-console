@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
 
-import { ConsoleFrameComponent } from './console-frame/console-frame';
-import { RateLimitService,  WatermarkService, DlqService, ExecutionService, ScatterGatherService, AuthProfileService } from '../../../core/services';
-import { TenantService } from '../../../core/services/tenant.service';
-import { ConnectionService } from '../../../core/services';
-import { JobService } from '../../../core/services/job.service';
-import { StoredCredentialService } from '../../../core/services/stored-credential.service';
+import { ConsoleFrameComponent } from './components/console-frame/console-frame';
+import { RateLimitService,  WatermarkService, DlqService, ExecutionService, ScatterGatherService, AuthProfileService } from '../../core/services';
+import { TenantService } from '../../core/services/tenant.service';
+import { ConnectionService } from '../../core/services';
+import { JobService } from '../../core/services/job.service';
+import { StoredCredentialService } from '../../core/services/stored-credential.service';
+
+import { ChatService } from '../../core/services/chat.service';
 
 @Component({
   selector: 'ei-shell',
@@ -23,6 +25,7 @@ export class ShellComponent {
   private readonly dlq = inject(DlqService);
   private readonly scatter = inject(ScatterGatherService);
     private readonly storedCreds = inject(StoredCredentialService);
+    private readonly chat = inject(ChatService);
 
   constructor() {
     void this.boot();
@@ -31,16 +34,17 @@ export class ShellComponent {
 private async boot(): Promise<void> {
   await this.tenants.load();
 
-  await Promise.all([
-    this.jobs.load(),
-    this.connections.load(),
-    this.auth.load(),
-    this.rateLimits.load(),
-    this.watermarks.load(),
-    this.executions.load(),
-    this.dlq.load(),
-    this.storedCreds.load(),
-  ]);
+await Promise.all([
+  this.jobs.load(),
+  this.connections.load(),
+  this.auth.load(),
+  this.rateLimits.load(),
+  this.watermarks.load(),
+  this.executions.load(),
+  this.dlq.load(),
+  this.storedCreds.load(),
+  this.chat.load(),
+]);
 
   this.scatter.reset();
 }

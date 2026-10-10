@@ -99,3 +99,12 @@ ei-credential-card,
 ei-credential-modal {
   display: block;
 }
+ei-chat-bubble,
+ei-chat-window,
+ei-chat-message,
+ei-chat-message-list,
+ei-chat-composer,
+ei-chat-history-panel,
+ei-chat-history-item {
+  display: contents;
+}

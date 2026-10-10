@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { RateLimitApi } from '../..';
-import { environment } from '../../../../../environments/environment';
-import { RateLimit } from '../../../models';
+import { RateLimitApi } from '../rate-limit.api';
+import { environment } from '../../../../environments/environment';
+import { RateLimit } from '../../models';
+
 
 
 @Injectable()

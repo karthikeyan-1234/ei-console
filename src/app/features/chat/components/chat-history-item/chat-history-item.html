@@ -1,0 +1,36 @@
+<div
+  class="chat-history-item"
+  [class.active]="isActive()"
+  (click)="onSelect()">
+
+  @if (isRenaming()) {
+    <input
+      #renameInput
+      class="chat-history-rename"
+      type="text"
+      [value]="renameText()"
+      (input)="onRenameInput($event)"
+      (keydown)="onRenameKeydown($event)"
+      (blur)="onRenameBlur()"
+      (click)="$event.stopPropagation()" />
+  } @else {
+
+    <div class="chat-history-item-title">{{ session().title }}</div>
+
+    <div class="chat-history-item-preview">
+      {{ session().lastMessagePreview || 'No messages yet' }}
+    </div>
+
+    <div class="chat-history-item-meta">
+      <span>{{ relativeTime() }}</span>
+      <span class="chat-history-item-count">{{ session().messageCount }}</span>
+    </div>
+
+    <div class="chat-history-item-menu">
+      <button
+        type="button"
+        title="Rename"
+        (click)="onRenameStart($event)">✎</button>
+    </div>
+  }
+</div>

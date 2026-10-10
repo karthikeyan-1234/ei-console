@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { ExecutionApi } from '../..';
-import { environment } from '../../../../../environments/environment';
-import { Execution } from '../../../models';
+import { ExecutionApi } from '../execution.api';
+import { environment } from '../../../../environments/environment';
+import { Execution } from '../../models';
+
 
 
 @Injectable()

@@ -17,3 +17,4 @@ export * from './scatter-gather.service';
 export * from './demo.service';
 export * from './signalr.service';
 export * from './stored-credential.service';
+export * from './chat.service';

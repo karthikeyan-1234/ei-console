@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { TaskLogApi } from '../..';
-import { environment } from '../../../../../environments/environment';
-import { TaskLogEntry } from '../../../task-log-entry.model';
+import { TaskLogApi } from '../task-log.api';
+import { environment } from '../../../../environments/environment';
+import { TaskLogEntry } from '../../models';
+
 
 
 @Injectable()

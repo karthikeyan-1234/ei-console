@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { TenantApi } from '../..';
-import { Tenant } from '../../../models';
-import { environment } from '../../../../../environments/environment';
+import { TenantApi } from '../tenant.api';
+import { environment } from '../../../../environments/environment';
+import { Tenant } from '../../models';
 
 @Injectable()
 export class HttpTenantApi extends TenantApi {

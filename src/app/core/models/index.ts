@@ -14,3 +14,4 @@ export * from './json-flow.model';
 export * from './scatter-state.model';
 export * from './toast.model';
 export * from './stored-credential.model';
+export * from './chat.model';

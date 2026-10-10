@@ -1,0 +1,57 @@
+<div
+  class="chat-message"
+  [class.user]="isUser()"
+  [class.assistant]="isAssistant()"
+  [class.sending]="isSending()"
+  [class.failed]="isFailed()">
+
+  <div class="chat-message-avatar" aria-hidden="true">
+    @if (isAssistant()) {
+      <svg class="robot-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <g class="robot-head">
+          <rect class="robot-face" x="20" y="30" width="60" height="52" rx="20" />
+          <circle class="robot-eye-left"  cx="39" cy="53" r="5" />
+          <circle class="robot-eye-right" cx="61" cy="53" r="5" />
+          <rect class="robot-mouth" x="43" y="66" width="14" height="2.5" rx="1.25" />
+        </g>
+      </svg>
+    } @else {
+      <span>U</span>
+    }
+  </div>
+
+  <div class="chat-message-content">
+    <div class="chat-message-bubble">{{ message().content }}</div>
+
+    <div class="chat-message-meta">
+      <span>{{ formatTime(message().createdAt) }}</span>
+
+      @if (isSending()) {
+        <span style="color:var(--chat-text-dim)">·</span>
+        <span>sending…</span>
+      }
+
+      @if (isFailed()) {
+        <span style="color:var(--chat-text-dim)">·</span>
+        <span>failed</span>
+        <span style="color:var(--chat-text-dim)">·</span>
+        <button
+          type="button"
+          class="chat-message-retry"
+          (click)="onRetry()">↻ retry</button>
+      }
+
+      @if (showCopy()) {
+        <button
+          type="button"
+          class="chat-message-copy"
+          [class.copied]="copied.value"
+          (click)="onCopy($event)"
+          title="Copy message">
+          {{ copied.value ? '✓ copied' : '⧉ copy' }}
+        </button>
+      }
+    </div>
+
+  </div>
+</div>

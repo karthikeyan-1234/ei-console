@@ -1,0 +1,33 @@
+<div class="chat-composer">
+  <div class="chat-composer-inner">
+    <textarea
+      #textarea
+      rows="1"
+      [value]="text()"
+      [disabled]="disabled()"
+      [placeholder]="disabled() ? 'Assistant is thinking…' : 'Ask anything about EI…'"
+      (input)="onInput($event)"
+      (keydown)="onKeydown($event)"></textarea>
+
+    <button
+      type="button"
+      class="chat-composer-send"
+      [disabled]="!canSend()"
+      (click)="submit()"
+      aria-label="Send message">
+      ➤
+    </button>
+  </div>
+
+  <div class="chat-composer-hint">
+    <button
+      type="button"
+      class="chat-composer-new"
+      (click)="onNewChat()">+ New chat</button>
+
+    <div class="chat-composer-shortcuts">
+      <span><kbd>Enter</kbd> to send</span>
+      <span><kbd>Shift</kbd>+<kbd>Enter</kbd> newline</span>
+    </div>
+  </div>
+</div>

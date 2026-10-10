@@ -1,9 +1,10 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { JobApi } from '../..';
-import { environment } from '../../../../../environments/environment';
-import { Job } from '../../../models';
+import { environment } from '../../../../environments/environment';
+import { Job } from '../../models';
+import { JobApi } from '../job.api';
+
 
 
 @Injectable()

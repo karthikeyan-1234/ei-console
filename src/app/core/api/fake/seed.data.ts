@@ -152,6 +152,206 @@ export const SEED_STORED_CREDENTIALS: import('../../models').StoredCredential[] 
   },
 ];
 
+
+// ---------------------------------------------------------------------------
+// Chat sessions
+//
+// The `daysAgo` offsets make the seed data relative to "now", so the history
+// panel's buckets (Today, Yesterday, Last 7 days, Last 30 days, YYYY-Mmm)
+// always have representatives regardless of when you run the demo.
+//
+// `hoursAgo` and `minutesAgo` are applied in addition to `daysAgo` for finer
+// control over intra-day ordering.
+// ---------------------------------------------------------------------------
+
+export interface SeedChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  minutesAgo: number;
+}
+
+export interface SeedChatSession {
+  id: string;
+  title: string;
+  tenant: string;
+  userId: string;
+  /** Days ago the session was created. Combined with the first message's minutesAgo. */
+  daysAgo: number;
+  messages: SeedChatMessage[];
+}
+
+export const SEED_CHAT_USER_ID = 'console-user';
+
+export const SEED_CHAT_SESSIONS: SeedChatSession[] = [
+  // -------------------------------------------------------------------------
+  // Today
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-today-1',
+    title: 'Adding a fork to a pipeline',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 0,
+    messages: [
+      { role: 'user', content: 'How do I add a parallel fork to my pipeline?', minutesAgo: 45 },
+      { role: 'assistant', content: 'Click the arrow between two tasks to select it as an insert point, then click Add fork in the pipeline toolbar. Two empty branches appear. Configure each by clicking Edit on its lane. Every child of the fork sees the same pre-fork input, not the previous branch.', minutesAgo: 44 },
+      { role: 'user', content: 'What if I need three lanes?', minutesAgo: 42 },
+      { role: 'assistant', content: 'Click Add lane in the purple fork header as many times as you need. Each new lane gets its own Branch card that you can rename, give a condition, and populate with children.', minutesAgo: 41 },
+    ],
+  },
+  {
+    id: 'chat-today-2',
+    title: 'SQL Server connection timeout',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 0,
+    messages: [
+      { role: 'user', content: 'What timeout units do SQL Server connections use?', minutesAgo: 180 },
+      { role: 'assistant', content: 'SQL Server connections use seconds. HTTP-based protocols (Rest, Soap, Json) use milliseconds. When you switch protocols in the connection modal, the timeout field auto-corrects to sensible defaults.', minutesAgo: 179 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // Yesterday
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-yesterday-1',
+    title: 'SFTP credential setup',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 1,
+    messages: [
+      { role: 'user', content: 'I need to connect to a partner SFTP server. What are my options?', minutesAgo: 600 },
+      { role: 'assistant', content: 'Create an auth profile with type SFTP Key Credentials. Store the private key in one of three modes: Key Vault reference (recommended), EI credential store (explicit, will be encrypted at rest), or inline on the profile (legacy, plaintext).', minutesAgo: 599 },
+      { role: 'user', content: 'And the connection itself?', minutesAgo: 597 },
+      { role: 'assistant', content: 'Create a connection with protocol SFTP. Enter the hostname only; the port goes in its own field and defaults to 22. Pick the SFTP auth profile you just created. The connection card shows host:port together.', minutesAgo: 596 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // Last 7 days
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-week-1',
+    title: 'Scatter-gather concurrency',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 3,
+    messages: [
+      { role: 'user', content: 'My bulk push is hitting provider rate limits. How do I slow it down?', minutesAgo: 200 },
+      { role: 'assistant', content: 'The connection you are pushing to has a rate limit policy. Open it in the Rate Limits view and lower Max RPS or Max Concurrent. The change takes effect on the next dispatch. The scatter-gather view shows live in-flight and queued counts.', minutesAgo: 199 },
+    ],
+  },
+  {
+    id: 'chat-week-2',
+    title: 'Iterator vs fork',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 5,
+    messages: [
+      { role: 'user', content: "What's the difference between an iterator and a fork?", minutesAgo: 30 },
+      { role: 'assistant', content: 'An iterator (FOR-EACH) runs the same sub-task once per array element. A fork runs different branches in parallel on the same payload. Use an iterator when every item looks the same; use a fork when entity types differ.', minutesAgo: 29 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // Last 30 days
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-month-1',
+    title: 'Watermarks explained',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 12,
+    messages: [
+      { role: 'user', content: 'Why do I need watermarks?', minutesAgo: 100 },
+      { role: 'assistant', content: 'Watermarks turn a full sync into a delta sync. Each run reads the last cursor, asks the source for changes since that cursor, and advances the cursor only after every item has been processed. Without them, every run pulls the entire source.', minutesAgo: 99 },
+    ],
+  },
+  {
+    id: 'chat-month-2',
+    title: 'Job version pinning',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 20,
+    messages: [
+      { role: 'user', content: 'If I edit a job while an execution is running, does it affect the run?', minutesAgo: 60 },
+      { role: 'assistant', content: 'No. Executions pin to a specific job version. When a run starts, the current published version is snapshotted. Any subsequent edits create a new draft version that affects only future runs.', minutesAgo: 59 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 2026-Aug bucket
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-aug-1',
+    title: 'Keycloak token exchange',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 62,
+    messages: [
+      { role: 'user', content: 'Explain the token exchange flow', minutesAgo: 120 },
+      { role: 'assistant', content: 'The EI worker presents the user token to Keycloak, requests a target token via RFC 8693 token exchange, caches the result in Redis, and presents that token to the provider API. The user token never reaches the provider.', minutesAgo: 119 },
+    ],
+  },
+  {
+    id: 'chat-aug-2',
+    title: 'Claims sync not triggering',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 75,
+    messages: [
+      { role: 'user', content: 'My claims sync hasn\'t run in two days', minutesAgo: 45 },
+      { role: 'assistant', content: 'Check the job status first — it may be paused. If the status is Active, look at the executions list for the last successful run and any Failed entries. A failed run leaves a DLQ row with the failure reason.', minutesAgo: 44 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 2026-Jul bucket
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-jul-1',
+    title: 'CSV vs JSON from FTP',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 95,
+    messages: [
+      { role: 'user', content: 'Can I read CSV files from FTP?', minutesAgo: 30 },
+      { role: 'assistant', content: 'Yes. When the FTP download task runs, it detects the format: JSON, CSV, or raw text. The parsed result lands in the pipeline context as a JSON array of rows. From there a Transform can normalise the schema.', minutesAgo: 29 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 2026-Jun bucket
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-jun-1',
+    title: 'Idempotency keys',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 125,
+    messages: [
+      { role: 'user', content: 'What is the idempotency key for?', minutesAgo: 40 },
+      { role: 'assistant', content: 'It prevents duplicate executions. When the same trigger fires twice — a webhook retried, a scheduler tick overlapping — the second attempt matches the key of the first and is discarded. Each job defines its own key pattern; for scheduled jobs it is typically the date plus the schedule slot.', minutesAgo: 39 },
+    ],
+  },
+
+  // -------------------------------------------------------------------------
+  // 2025-Dec bucket (older than a year)
+  // -------------------------------------------------------------------------
+  {
+    id: 'chat-dec-1',
+    title: 'First-time setup questions',
+    tenant: 'broker-uae',
+    userId: SEED_CHAT_USER_ID,
+    daysAgo: 310,
+    messages: [
+      { role: 'user', content: 'Where do I start?', minutesAgo: 10 },
+      { role: 'assistant', content: 'Start with Tenants, then Connections, then Jobs. A tenant scopes everything else; a connection gives a job somewhere to talk to; a job composes tasks into a pipeline. Publish the job to activate it.', minutesAgo: 9 },
+    ],
+  },
+];
+
 export const SEED_RATE_LIMITS: RateLimit[] = [
   { id:'rl-1', connectionId:'conn-1', scope:'PerConnection', rps:50, burst:100, concurrent:20 },
   { id:'rl-2', connectionId:'conn-2', scope:'PerConnection', rps:500, burst:1000, concurrent:100 },

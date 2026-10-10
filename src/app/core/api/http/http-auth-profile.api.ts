@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { AuthProfileApi, AuthTestResult } from '../..';
-import { environment } from '../../../../../environments/environment';
-import { AuthProfile } from '../../../models';
+import { AuthProfileApi, AuthTestResult } from '../auth-profile.api';
+import { environment } from '../../../../environments/environment';
+import { AuthProfile } from '../../models';
 
 @Injectable()
 export class HttpAuthProfileApi extends AuthProfileApi {

@@ -1,9 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { WatermarkApi } from '../..';
-import { environment } from '../../../../../environments/environment';
-import { Watermark } from '../../../models';
+import { WatermarkApi } from '../watermark.api';
+import { environment } from '../../../../environments/environment';
+import { Watermark } from '../../models';
 
 
 @Injectable()
