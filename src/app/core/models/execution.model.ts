@@ -16,10 +16,10 @@ export interface Execution {
   elapsedSec: number;
   correlationId: string;
   triggerSource: ExecutionTriggerSource;
-  coreEvent: string;
+  coreEvent: string | null;
   workerInstance: string;
   jobVersion: number;
-  idempotencyKey: string;
+  idempotencyKey: string | null;
   hasBranches: boolean;
   branches?: BranchProgress[];
   join?: JoinProgress;

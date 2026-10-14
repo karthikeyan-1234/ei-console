@@ -6,4 +6,5 @@ export abstract class ScatterItemApi {
   abstract replay(executionId: string, itemId: string): Promise<ScatterItem>;
 }
 
-export const SCATTER_ITEM_API = new InjectionToken<ScatterItemApi>('SCATTER_ITEM_API');
+export const SCATTER_ITEM_API =
+  new InjectionToken<ScatterItemApi>('SCATTER_ITEM_API');

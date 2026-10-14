@@ -14,9 +14,7 @@ export class ExecutionService {
   readonly executions = this._executions.asReadonly();
   readonly selectedId = this._selectedId.asReadonly();
 
-  readonly scopedExecutions = computed(() =>
-    this._executions().filter(e => this.tenants.inScope(e.tenant)),
-  );
+readonly scopedExecutions = computed(() => this._executions());
 
   readonly selected = computed(() =>
     this._executions().find(e => e.id === this._selectedId()) ?? null,

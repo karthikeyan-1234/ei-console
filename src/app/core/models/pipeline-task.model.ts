@@ -5,7 +5,8 @@ export type TaskType =
   | 'ApiPush'
   | 'Notify'
   | 'Branch'
-  | 'JoinPoint';
+  | 'JoinPoint'
+  | 'FtpDownload';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -74,6 +75,8 @@ export interface TransformTask extends BaseTask {
   iterate?: boolean;
   outputKey?: string;
   subtasks?: SubTask[];
+   batchSize?: number;
+   maxConcurrency?: number;
 }
 
 export interface ApiPushTask extends BaseTask {
@@ -117,6 +120,24 @@ export interface JoinPointTask extends BaseTask {
   joinTimeoutAction?: JoinTimeoutAction;
 }
 
+export interface FtpDownloadTask extends BaseTask {
+  type: 'FtpDownload';
+  connectionId: string;
+  authId?: string;
+
+  /** Path on the remote server, e.g. /incoming/policies.json */
+  remotePath: string;
+
+  /** Format hint. Auto = detect from extension and content. */
+  fileFormat?: 'Auto' | 'Json' | 'Csv' | 'Text';
+
+  /** Delete the remote file after a successful download. */
+  deleteAfterDownload?: boolean;
+
+  /** Where the parsed content is stored in the pipeline context. */
+  outputKey?: string;
+}
+
 export type PipelineTask =
   | ApiPullTask
   | SqlQueryTask
@@ -124,7 +145,8 @@ export type PipelineTask =
   | ApiPushTask
   | NotifyTask
   | BranchTask
-  | JoinPointTask;
+  | JoinPointTask
+  | FtpDownloadTask;
 
 export interface PipelineBlock {
   type: 'node' | 'fork';

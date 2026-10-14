@@ -1,0 +1,82 @@
+<div class="callout" style="background:#f0fdf4;border-color:#86efac">
+  <b>FTP / SFTP Download</b> — fetches a file from the selected FTP or SFTP connection
+  and parses its content into the pipeline context.
+  The <b>format</b> determines how the content is interpreted:
+  <code>Auto</code> detects from the file extension and content shape.
+</div>
+
+<div class="form-grid">
+
+  <div class="form-group full">
+    <label>FTP / SFTP Connection</label>
+    <select (change)="onConnectionChange($any($event.target).value)">
+      <option value="" [selected]="!task().connectionId">— Select —</option>
+      @for (c of connectionOptions(); track c.id) {
+        <option [value]="c.id" [selected]="c.id === task().connectionId">
+          {{ c.name }} · {{ c.protocol }}
+        </option>
+      }
+    </select>
+    @if (connectionOptions().length === 0) {
+      <div class="hint" style="color:#b91c1c">
+        No FTP or SFTP connections available. Create one in the Connections view first.
+      </div>
+    }
+  </div>
+
+  <div class="form-group full">
+    <label>Auth Profile (override)</label>
+    <select (change)="onAuthChange($any($event.target).value)">
+      <option value="" [selected]="!task().authId">— Connection default —</option>
+      @for (a of authOptions(); track a.id) {
+        <option [value]="a.id" [selected]="a.id === task().authId">{{ a.name }}</option>
+      }
+    </select>
+  </div>
+
+  <div class="form-group full">
+    <label>Remote file path</label>
+    <input
+      type="text"
+      style="font-family:var(--mono)"
+      placeholder="/incoming/policies.json"
+      [value]="remotePath()"
+      (input)="onRemotePathChange($any($event.target).value)" />
+    <div class="hint">The full path on the FTP/SFTP server. Leading slash for absolute paths.</div>
+  </div>
+
+  <div class="form-group">
+    <label>File format</label>
+    <select (change)="onFileFormatChange($any($event.target).value)">
+      <option value="Auto"  [selected]="fileFormat() === 'Auto'">Auto (detect)</option>
+      <option value="Json"  [selected]="fileFormat() === 'Json'">JSON</option>
+      <option value="Csv"   [selected]="fileFormat() === 'Csv'">CSV</option>
+      <option value="Text"  [selected]="fileFormat() === 'Text'">Plain text</option>
+    </select>
+  </div>
+
+  <div class="form-group">
+    <label>Store output as key</label>
+    <input
+      type="text"
+      style="font-family:var(--mono)"
+      [value]="outputKey()"
+      (input)="onOutputKeyChange($any($event.target).value)" />
+  </div>
+
+  <div class="form-group full">
+    <div class="chk-row">
+      <input
+        type="checkbox"
+        id="taskDeleteAfterDownload"
+        [checked]="deleteAfterDownload()"
+        (change)="onDeleteAfterDownloadChange($any($event.target).checked)" />
+      <label
+        for="taskDeleteAfterDownload"
+        style="text-transform:none;font-weight:600;margin:0;font-size:11.5px">
+        Delete the remote file after a successful download
+      </label>
+    </div>
+    <div class="hint">Irreversible. Only enable for processed files that should be removed from the source.</div>
+  </div>
+</div>

@@ -39,6 +39,8 @@
   <ei-join-point-fields [task]="t" />
 } @else if (type() === 'Branch' && asBranch(); as t) {
   <ei-branch-fields [task]="t" [jobId]="ctx.jobId" />
+} @else if (type() === 'FtpDownload' && asFtpDownload(); as t) {
+  <ei-ftp-download-fields [task]="t" />
 }
 
     <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>

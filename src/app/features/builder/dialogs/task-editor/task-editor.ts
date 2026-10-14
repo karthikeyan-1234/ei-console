@@ -3,6 +3,7 @@ import {
   ApiPullTask,
   ApiPushTask,
   BranchTask,
+  FtpDownloadTask,
   JoinPointTask,
   NotifyTask,
   TaskType,
@@ -19,6 +20,7 @@ import { BranchFieldsComponent } from './fields/branch-fields';
 
 import { SqlQueryTask } from '../../../../core/models';
 import { SqlQueryFieldsComponent } from './fields/sql-query-fields';
+import { FtpDownloadFieldsComponent } from './fields/ftp-download-fields';
 
 @Component({
   selector: 'ei-task-editor',
@@ -31,6 +33,7 @@ import { SqlQueryFieldsComponent } from './fields/sql-query-fields';
     NotifyFieldsComponent,
     JoinPointFieldsComponent,
     BranchFieldsComponent,
+    FtpDownloadFieldsComponent,
   ],
   templateUrl: './task-editor.html',
 })
@@ -68,15 +71,15 @@ export class TaskEditorComponent {
     return 'Top-level pipeline task';
   });
 
-  readonly typeOptions = computed<TaskType[]>(() => {
-    const ctx = this.context();
-    if (!ctx) return [];
-    if (ctx.path.level === 'sub') return ['ApiPush', 'Notify'];
-    if (ctx.path.level === 'branch-child') {
-      return ['ApiPull', 'SqlQuery', 'Transform', 'ApiPush', 'Notify'];
-    }
-    return ['ApiPull', 'SqlQuery', 'Transform', 'ApiPush', 'Notify', 'Branch', 'JoinPoint'];
-  });
+readonly typeOptions = computed<TaskType[]>(() => {
+  const ctx = this.context();
+  if (!ctx) return [];
+  if (ctx.path.level === 'sub') return ['ApiPush', 'Notify'];
+  if (ctx.path.level === 'branch-child') {
+    return ['ApiPull', 'SqlQuery', 'Transform', 'ApiPush', 'Notify', 'FtpDownload'];
+  }
+  return ['ApiPull', 'SqlQuery', 'Transform', 'ApiPush', 'Notify', 'FtpDownload', 'Branch', 'JoinPoint'];
+});
 
   readonly asApiPull = computed<ApiPullTask | null>(() => {
     const ctx = this.context();
@@ -115,6 +118,13 @@ export class TaskEditorComponent {
 
   readonly canGoBack = this.editor.canGoBack;
 readonly parentTaskName = this.editor.parentTaskName;
+
+readonly asFtpDownload = computed<FtpDownloadTask | null>(() => {
+  const ctx = this.context();
+  return ctx && ctx.task.type === 'FtpDownload'
+    ? (ctx.task as FtpDownloadTask)
+    : null;
+});
 
   constructor() {
     effect(() => {
