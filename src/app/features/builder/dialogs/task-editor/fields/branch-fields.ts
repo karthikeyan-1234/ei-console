@@ -1,4 +1,4 @@
-import { Component, computed, inject, input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { BranchChildTask, BranchTask } from '../../../../../core/models';
 import { TaskEditorService } from '../../../services/task-editor.service';
 
@@ -18,10 +18,12 @@ export class BranchFieldsComponent {
     { value: 'Parallel',   label: 'Parallel' },
   ];
 
-  readonly condition = computed(() => this.task().condition ?? '');
-  readonly executionMode = computed(() => this.task().executionMode ?? 'Sequential');
-  readonly children = computed<BranchChildTask[]>(() => this.task().children ?? []);
-  readonly childrenCount = computed(() => this.children().length);
+  // Methods — task is mutated in place.
+
+  condition(): string { return this.task().condition ?? ''; }
+  executionMode(): string { return this.task().executionMode ?? 'Sequential'; }
+  children(): BranchChildTask[] { return this.task().children ?? []; }
+  childrenCount(): number { return (this.task().children ?? []).length; }
 
   onConditionChange(v: string): void { this.task().condition = v; }
 
@@ -29,12 +31,6 @@ export class BranchFieldsComponent {
     this.task().executionMode = v === 'Parallel' ? 'Parallel' : 'Sequential';
   }
 
-  /**
-   * Opens the editor for one of this branch's children. The TaskEditorService
-   * swaps the context in place; the effect in TaskEditorComponent notices the
-   * change and re-renders the body with the child's fields. The modal stays
-   * open throughout — no flicker, no close/reopen.
-   */
   onEditChild(child: BranchChildTask): void {
     this.taskEditor.openForTask(this.jobId(), child);
   }

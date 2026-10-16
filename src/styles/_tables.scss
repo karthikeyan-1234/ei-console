@@ -11,6 +11,35 @@
 }
 .ctable-row:not(.head):hover{background:#f8fafc}
 
+/* Task-log SUMMARY cell — text plus a hover-revealed copy button. */
+.tl-summary-cell{
+  display:flex;align-items:center;gap:4px;
+  min-width:0;
+}
+.tl-summary-text{
+  flex:1 1 auto;min-width:0;
+  font-family:var(--mono);font-size:9.5px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+}
+.tl-copy-btn{
+  flex-shrink:0;
+  width:20px;height:20px;border-radius:5px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;color:var(--muted);
+  background:transparent;border:1px solid transparent;
+  cursor:pointer;opacity:0;
+  transition:opacity .12s,background .12s,border-color .12s,color .12s;
+}
+.ctable-row:hover .tl-copy-btn{
+  opacity:1;
+}
+.tl-copy-btn:hover{
+  background:#f1f5f9;border-color:#d6deea;color:var(--ink2);
+}
+.tl-copy-btn:active{
+  transform:scale(.9);
+}
+
 .item-table-wrap{background:#fff;border:1px solid #dbe3ee;border-radius:12px;overflow:hidden}
 .item-table-head{
   padding:12px 16px;background:#f8fafc;border-bottom:1px solid #e2e8f0;

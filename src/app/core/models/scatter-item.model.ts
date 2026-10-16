@@ -14,6 +14,7 @@ export interface ScatterItem {
   http: number | string;
   attempts: number;
   completed: string;
+  duration?: string;  
 }
 
 /**
@@ -50,6 +51,7 @@ export function toScatterItem(dto: ScatterItemDto): ScatterItem {
     http: dto.httpStatusCode ?? '—',
     attempts: dto.attemptCount,
     completed: dto.completedAt ? shortTime(dto.completedAt) : '—',
+    duration: dto.durationMs != null ? `${dto.durationMs} ms` : '—',   // ← new
   };
 }
 

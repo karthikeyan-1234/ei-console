@@ -9,7 +9,7 @@ interface TaskLogEntryDto {
   executionId: string; taskId: string; parentTaskId: string | null;
   orderIndex: number; name: string; type: string; status: string;
   attempt: number; started: string; completed: string;
-  durationMs: number; summary: string;
+  durationMs: number; summary: string; error?: string | null;
 }
 
 function toEntry(dto: TaskLogEntryDto): TaskLogEntry {
@@ -26,6 +26,7 @@ function toEntry(dto: TaskLogEntryDto): TaskLogEntry {
     completed: dto.completed,
     duration: dto.durationMs,
     summary: dto.summary,
+    error: dto.error ?? undefined,
   };
 }
 

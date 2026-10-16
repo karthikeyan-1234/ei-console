@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { SubTask, TransformTask } from '../../../../../core/models';
 import { JsonataService } from '../../../../../core/services/jsonata.service';
 
@@ -20,25 +20,27 @@ export class TransformFieldsComponent {
   readonly preview = signal<PreviewState>({ kind: 'idle' });
   readonly diagnostic = signal<string>('Click to preview output');
 
-  /** Template-safe mirror of task fields (avoids literals in bindings). */
-  readonly inputSource = computed(() => this.task().inputSource ?? '');
-  readonly jsonataText = computed(() => this.task().jsonata ?? '');
-  readonly sampleInputText = computed(() => this.task().sampleInput ?? '');
-  readonly useSample = computed(() => !!this.task().useSampleInput);
-  readonly iterate = computed(() => !!this.task().iterate);
-  readonly subtasks = computed<SubTask[]>(() => this.task().subtasks ?? []);
-  readonly subtaskCount = computed(() => this.subtasks().length);
+  // -----------------------------------------------------------------
+  // Template accessors. The task object is mutated in place by the
+  // handlers below; Angular's input signal only emits on reference change,
+  // so a computed() that reads a mutable field would return a stale value
+  // after the first mutation. Methods re-execute on every CD pass, and
+  // every mutation runs inside a DOM event handler which triggers CD.
+  // -----------------------------------------------------------------
+
+  inputSource(): string { return this.task().inputSource ?? ''; }
+  jsonataText(): string { return this.task().jsonata ?? ''; }
+  sampleInputText(): string { return this.task().sampleInput ?? ''; }
+  useSample(): boolean { return !!this.task().useSampleInput; }
+  iterate(): boolean { return !!this.task().iterate; }
+  subtasks(): SubTask[] { return this.task().subtasks ?? []; }
+  subtaskCount(): number { return (this.task().subtasks ?? []).length; }
 
   onInputSourceChange(v: string): void { this.task().inputSource = v; }
   onJsonataChange(v: string): void { this.task().jsonata = v; }
   onSampleInputChange(v: string): void { this.task().sampleInput = v; }
   onUseSampleChange(v: boolean): void { this.task().useSampleInput = v; }
 
-  /**
-   * Toggling iterate off when sub-tasks exist asks for confirmation.
-   * `preventDefault()` on the click keeps the checkbox from flipping
-   * before the user has agreed.
-   */
   onIterateToggle(event: MouseEvent): void {
     const t = this.task();
     const willBe = !t.iterate;
@@ -81,13 +83,7 @@ export class TransformFieldsComponent {
     const pretty = typeof value === 'string' ? value : JSON.stringify(value, null, 2);
     const count = Array.isArray(value) ? value.length : null;
 
-    this.preview.set({
-      kind: 'success',
-      text: pretty ?? 'null',
-      count,
-    });
-    this.diagnostic.set(
-      count !== null ? `✓ ${count} item(s)` : '✓ 1 result',
-    );
+    this.preview.set({ kind: 'success', text: pretty ?? 'null', count });
+    this.diagnostic.set(count !== null ? `✓ ${count} item(s)` : '✓ 1 result');
   }
 }

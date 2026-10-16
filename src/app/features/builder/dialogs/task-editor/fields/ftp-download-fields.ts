@@ -14,7 +14,7 @@ export class FtpDownloadFieldsComponent {
 
   readonly task = input.required<FtpDownloadTask>();
 
-  /** Only FTP and SFTP connections are selectable. */
+  /** Service-backed, safe as computed. */
   readonly connectionOptions = computed(() =>
     this.connections.scopedConnections().filter(c =>
       c.protocol === 'Ftp' || c.protocol === 'Sftp'),
@@ -22,10 +22,12 @@ export class FtpDownloadFieldsComponent {
 
   readonly authOptions = this.auths.scopedProfiles;
 
-  readonly remotePath = computed(() => this.task().remotePath ?? '');
-  readonly fileFormat = computed(() => this.task().fileFormat ?? 'Auto');
-  readonly deleteAfterDownload = computed(() => this.task().deleteAfterDownload ?? false);
-  readonly outputKey = computed(() => this.task().outputKey ?? 'FileContent');
+  // Methods — task is mutated in place.
+
+  remotePath(): string { return this.task().remotePath ?? ''; }
+  fileFormat(): string { return this.task().fileFormat ?? 'Auto'; }
+  deleteAfterDownload(): boolean { return this.task().deleteAfterDownload ?? false; }
+  outputKey(): string { return this.task().outputKey ?? 'FileContent'; }
 
   onConnectionChange(v: string): void { this.task().connectionId = v; }
   onAuthChange(v: string): void { this.task().authId = v || undefined; }

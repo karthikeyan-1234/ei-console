@@ -3,7 +3,7 @@
     <div>
       <h3>Execution · {{ shortId(ex.id) }}</h3>
       <div class="sub">
-        {{ ex.job }} · {{ tenantLabel() }} · Started {{ ex.started }}{{ ex.hasBranches ? ' · Fork-Join' : '' }}
+        {{ ex.job }} · {{ tenantLabel() }} · Started {{ startedLabel() }}{{ ex.hasBranches ? ' · Fork-Join' : '' }}
       </div>
     </div>
     <div class="actions">

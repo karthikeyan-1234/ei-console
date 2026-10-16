@@ -16,6 +16,7 @@ import { ExecutionTracingPanelComponent } from '../../components/execution-traci
 import { BranchProgressPanelComponent } from '../../components/branch-progress-panel/branch-progress-panel';
 import { TaskLogTableComponent } from '../../components/task-log-table/task-log-table';
 import { ScatterDetailTableComponent } from '../../components/scatter-detail-table/scatter-detail-table';
+import { formatLocalStamp } from '../../../../core/utils/date.util';
 
 @Component({
   selector: 'ei-execution-detail-view',
@@ -34,6 +35,11 @@ export class ExecutionDetailViewComponent {
   private readonly scatterItems = inject(ScatterItemService);
   private readonly tenants = inject(TenantService);
   private readonly router = inject(Router);
+
+  startedLabel(): string {
+  const ex = this.execution();
+  return ex ? formatLocalStamp(ex.started) : '';
+}
 
   readonly id = input.required<string>();
 

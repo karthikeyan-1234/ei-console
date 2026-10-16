@@ -14,25 +14,29 @@ export class SqlQueryFieldsComponent {
 
   readonly task = input.required<SqlQueryTask>();
 
-  /** Only SqlServer-protocol connections can be selected. */
+  /** Service-backed signals, safe as computed. */
   readonly connectionOptions = computed(() =>
     this.connections.scopedConnections().filter(c => c.protocol === 'SqlServer'),
   );
-
   readonly authOptions = this.auths.scopedProfiles;
 
-  readonly queryText = computed(() => this.task().query ?? '');
-  readonly outputKey = computed(() => this.task().outputKey ?? 'Rows');
-  readonly timeoutValue = computed(() => this.task().queryTimeout ?? 60);
-  readonly sampleResponseText = computed(() => this.task().sampleResponse ?? '[]');
+  // -----------------------------------------------------------------
+  // Methods — task is mutated in place.
+  // -----------------------------------------------------------------
+
+  queryText(): string { return this.task().query ?? ''; }
+  outputKey(): string { return this.task().outputKey ?? 'Rows'; }
+  timeoutValue(): number { return this.task().queryTimeout ?? 60; }
+  sampleResponseText(): string { return this.task().sampleResponse ?? '[]'; }
+  queryMode(): SqlQueryTask['queryMode'] { return this.task().queryMode ?? 'Reader'; }
+
+  selectedConnectionName(): string {
+    const id = this.task().connectionId;
+    return id ? this.connections.nameById(id) : '';
+  }
 
   readonly preview = signal<string>('—');
   readonly previewStatus = signal<'idle' | 'ok' | 'error'>('idle');
-
-  readonly selectedConnectionName = computed(() => {
-    const id = this.task().connectionId;
-    return id ? this.connections.nameById(id) : '';
-  });
 
   onConnectionChange(v: string): void { this.task().connectionId = v; }
   onAuthChange(v: string): void { this.task().authId = v || undefined; }
@@ -40,13 +44,15 @@ export class SqlQueryFieldsComponent {
   onTimeoutChange(v: string): void { this.task().queryTimeout = parseInt(v, 10) || 60; }
   onOutputKeyChange(v: string): void { this.task().outputKey = v; }
   onSampleResponseChange(v: string): void { this.task().sampleResponse = v; }
+  onQueryModeChange(v: string): void {
+    this.task().queryMode = v as SqlQueryTask['queryMode'];
+  }
 
   onPreviewSample(): void {
     const raw = (this.task().sampleResponse ?? '').trim() || '[]';
     try {
       const parsed = JSON.parse(raw);
-      const pretty = JSON.stringify(parsed, null, 2);
-      this.preview.set(pretty);
+      this.preview.set(JSON.stringify(parsed, null, 2));
       this.previewStatus.set('ok');
     } catch (e) {
       this.preview.set(`Invalid sample JSON: ${(e as Error).message}`);
@@ -54,12 +60,6 @@ export class SqlQueryFieldsComponent {
     }
   }
 
-  onQueryModeChange(v: string): void {
-  this.task().queryMode = v as SqlQueryTask['queryMode'];
-}
-
-  /** Template helper — coerce both sides to string. Angular templates
-   *  can't call String() directly. */
   same(a: unknown, b: unknown): boolean {
     return String(a ?? '') === String(b ?? '');
   }

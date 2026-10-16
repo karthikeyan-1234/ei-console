@@ -4,7 +4,7 @@
 
     <div
       class="ctable-row head"
-      style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 1.6fr">
+      style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 2.2fr">
       <div>#</div>
       <div>TASK</div>
       <div>TYPE</div>
@@ -19,7 +19,7 @@
     @for (l of pagedRows(); track l.taskId + '-' + l.orderIndex) {
       <div
         class="ctable-row"
-        style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 1.6fr">
+        style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 2.2fr">
 
         <div style="font-family:var(--mono);font-size:10.5px">{{ l.orderIndex }}</div>
 
@@ -44,15 +44,26 @@
         </div>
 
         <div style="font-family:var(--mono);font-size:10.5px">{{ l.attempt }}</div>
-        <div style="font-family:var(--mono);font-size:10.5px">{{ l.started }}</div>
-        <div style="font-family:var(--mono);font-size:10.5px">{{ l.completed }}</div>
+        <div style="font-family:var(--mono);font-size:10.5px">{{ startedLabel(l) }}</div>
+        <div style="font-family:var(--mono);font-size:10.5px">{{ completedLabel(l) }}</div>
         <div style="font-family:var(--mono);font-size:10.5px">
           {{ l.duration ? fmtMs(l.duration) : '—' }}
         </div>
-        <div
-          [title]="l.summary"
-          style="font-family:var(--mono);font-size:9.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
-          {{ l.summary }}
+        <div class="tl-summary-cell">
+          <span
+            class="tl-summary-text"
+            [title]="l.error || l.summary"
+            [style.color]="l.error ? '#b91c1c' : 'var(--muted)'">
+            {{ l.error || l.summary || '—' }}
+          </span>
+
+          @if (l.error || l.summary) {
+            <button
+              type="button"
+              class="tl-copy-btn"
+              title="Copy to clipboard"
+              (click)="copyToClipboard(l.error || l.summary)">⧉</button>
+          }
         </div>
       </div>
     } @empty {

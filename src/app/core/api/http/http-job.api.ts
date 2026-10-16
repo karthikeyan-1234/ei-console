@@ -139,14 +139,15 @@ function toPipelineTaskWire(t: PipelineTask): any {
     outputKey: (t as any).outputKey ?? null,
   };
 
-  const optional = [
-    'url', 'method', 'body', 'sampleResponse', 'inputSource', 'jsonata',
-    'useSampleInput', 'sampleInput', 'kafkaTopic', 'condition',
-    'executionMode', 'joinMode', 'joinThreshold', 'joinTimeoutSeconds',
-    'joinTimeoutAction', 'iterate', 'remotePath', 'fileFormat',
-    'deleteAfterDownload', 'query', 'queryTimeout', 'batchSize',
-    'maxConcurrency',
-  ];
+const optional = [
+  'url', 'method', 'body', 'sampleResponse', 'inputSource', 'jsonata',
+  'useSampleInput', 'sampleInput', 'kafkaTopic', 'condition',
+  'executionMode', 'joinMode', 'joinThreshold', 'joinTimeoutSeconds',
+  'joinTimeoutAction', 'iterate', 'remotePath', 'fileFormat',
+  'deleteAfterDownload', 'query', 'queryTimeout', 'batchSize',
+  'maxConcurrency', 'headers',
+  'bodyKind', 'rawContentType', 'formFields',   // ← new
+];
   for (const key of optional) {
     const v = (t as any)[key];
     if (v !== undefined) out[key] = v;

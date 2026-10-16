@@ -1,0 +1,30 @@
+<div class="headers-table">
+  @for (h of visible(); track $index; let i = $index) {
+    <div class="header-row">
+      <input
+        type="text"
+        class="header-key"
+        [placeholder]="'Header-Name'"
+        [value]="h.key"
+        (input)="onKeyChange(i, $any($event.target).value)" />
+      <input
+        type="text"
+        class="header-value"
+        [placeholder]="'value ({{store}} or {{$.path}} allowed)'"
+        [value]="h.value"
+        (input)="onValueChange(i, $any($event.target).value)" />
+      <button
+        type="button"
+        class="btn-ghost btn btn-xs"
+        style="color:var(--red)"
+        title="Remove header"
+        (click)="onRemove(i)">✕</button>
+    </div>
+  }
+
+  <button
+    type="button"
+    class="btn btn-outline btn-sm"
+    style="margin-top:6px"
+    (click)="onAdd()">+ Add header</button>
+</div>

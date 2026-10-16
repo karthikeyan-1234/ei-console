@@ -10,6 +10,14 @@ export type TaskType =
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+export interface FormField {
+  key: string;
+  valueType: 'Text' | 'File';
+  value: string;
+  fileName?: string;
+  contentType?: string;
+}
+
 export interface SubTask {
   id: string;
   type: 'ApiPush' | 'Notify';
@@ -40,6 +48,12 @@ export interface ApiPullTask extends BaseTask {
   method: HttpMethod;
   outputKey?: string;
   sampleResponse?: string;
+
+  // NEW — same body model as ApiPush
+  body?: string;
+  bodyKind?: 'Json' | 'Raw' | 'UrlEncoded' | 'FormData' | 'None';
+  rawContentType?: string;
+  formFields?: FormField[];
 }
 
 /**
@@ -161,4 +175,26 @@ export interface PipelineBlock {
   branches?: { branch: BranchTask; idx: number }[];
   startIdx: number;
   endIdx: number;
+}
+
+export interface HeaderEntry {
+  key: string;
+  value: string;
+}
+
+export interface FormField {
+  key: string;
+  valueType: 'Text' | 'File';
+  value: string;
+  fileName?: string;
+  contentType?: string;
+}
+
+export interface BaseTask {
+  id: string;
+  type: TaskType;
+  name: string;
+  timeout?: number;
+  /** Task-level HTTP headers. Values support {{placeholder}} substitution. */
+  headers?: HeaderEntry[];
 }

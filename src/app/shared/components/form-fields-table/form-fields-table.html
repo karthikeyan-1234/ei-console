@@ -1,0 +1,62 @@
+<div class="form-fields-table">
+  @for (f of visible(); track $index; let i = $index) {
+    <div class="ff-row">
+      <input
+        class="ff-key"
+        type="text"
+        placeholder="field name"
+        [value]="f.key"
+        (input)="onKeyChange(i, $any($event.target).value)" />
+
+      <select
+        class="ff-type"
+        (change)="onTypeChange(i, $any($event.target).value)">
+        <option value="Text" [selected]="f.valueType === 'Text'">Text</option>
+        @if (allowFile()) {
+          <option value="File" [selected]="f.valueType === 'File'">File</option>
+        }
+      </select>
+
+      <input
+        class="ff-value"
+        type="text"
+        [placeholder]="f.valueType === 'File'
+          ? 'https://source/file.pdf or {{urlKey}}'
+          : 'value, {{store}}, or {{$.path}}'"
+        [value]="f.value"
+        (input)="onValueChange(i, $any($event.target).value)" />
+
+      <button
+        type="button"
+        class="btn-ghost btn btn-xs"
+        style="color:var(--red)"
+        title="Remove"
+        (click)="onRemove(i)">✕</button>
+    </div>
+
+    @if (f.valueType === 'File') {
+      <div class="ff-row ff-extras">
+        <span class="ff-spacer"></span>
+        <input
+          class="ff-fileName"
+          type="text"
+          placeholder="filename (optional)"
+          [value]="f.fileName ?? ''"
+          (input)="onFileNameChange(i, $any($event.target).value)" />
+        <input
+          class="ff-contentType"
+          type="text"
+          placeholder="content-type (optional)"
+          [value]="f.contentType ?? ''"
+          (input)="onContentTypeChange(i, $any($event.target).value)" />
+        <span class="ff-spacer"></span>
+      </div>
+    }
+  }
+
+  <button
+    type="button"
+    class="btn btn-outline btn-sm"
+    style="margin-top:6px"
+    (click)="onAdd()">+ Add field</button>
+</div>

@@ -1,18 +1,16 @@
 <div class="callout">
-  <b>API Push</b> — sends data to a provider. The request body is evaluated as JSONata per item.
+  <b>API Push</b> — sends data to a provider. The request body is evaluated
+  per pipeline item, so <code>$</code> refers to the current item.
 </div>
 
 <div class="form-grid">
+
   <div class="form-group">
     <label>Connection</label>
     <select (change)="onConnectionChange($any($event.target).value)">
       <option value="" [selected]="!task().connectionId">— Select —</option>
       @for (c of connectionOptions(); track c.id) {
-        <option
-  [value]="c.id"
-  [selected]="same(c.id, task().connectionId)">
-  {{ c.name }}
-</option>
+        <option [value]="c.id" [selected]="same(c.id, task().connectionId)">{{ c.name }}</option>
       }
     </select>
   </div>
@@ -29,37 +27,79 @@
 
   <div class="form-group full">
     <label>Endpoint URL / Path</label>
-    <input
-      type="text"
-      style="font-family:var(--mono)"
-      [value]="task().url || ''"
-      (input)="onUrlChange($any($event.target).value)" />
+<input type="text" style="font-family:var(--mono)"
+  [placeholder]="urlPlaceholder"
+  [value]="task().url || ''"
+  (input)="onUrlChange($any($event.target).value)" />
+    <div class="hint" ngNonBindable>
+      Placeholders: <code>{{storeKey}}</code>, <code>{{$.path}}</code>, or mixed text. Example: {{urlPlaceholder}}.
+    </div>
   </div>
 
   <div class="form-group">
     <label>HTTP Method</label>
     <select (change)="onMethodChange($any($event.target).value)">
       @for (m of methods; track m) {
-        <option [value]="m" [selected]="same(m, task().method || 'POST')">{{ m }}</option>
+        <option [value]="m" [selected]="m === (task().method || 'POST')">{{ m }}</option>
       }
     </select>
   </div>
 
   <div class="form-group">
     <label>Timeout (s)</label>
-    <input
-      type="number"
+    <input type="number"
       [value]="task().timeout || 30"
       (input)="onTimeoutChange($any($event.target).value)" />
   </div>
 
   <div class="form-group full">
-    <label>Request Body (JSONata)</label>
-    <textarea
-      class="editor-pane"
-      rows="4"
-      style="margin-top:4px"
-      [value]="bodyValue()"
-      (input)="onBodyChange($any($event.target).value)"></textarea>
+    <label>Body Type</label>
+    <select (change)="onBodyKindChange($any($event.target).value)">
+      <option value="None"       [selected]="bodyKind() === 'None'">None</option>
+      <option value="Json"       [selected]="bodyKind() === 'Json'">JSON</option>
+      <option value="Raw"        [selected]="bodyKind() === 'Raw'">Raw text</option>
+      <option value="UrlEncoded" [selected]="bodyKind() === 'UrlEncoded'">URL-encoded</option>
+      <option value="FormData"   [selected]="bodyKind() === 'FormData'">Multipart form-data</option>
+    </select>
   </div>
+
+  @if (bodyKind() === 'Json' || bodyKind() === 'Raw') {
+    <div class="form-group full">
+      <label>
+        {{ bodyKind() === 'Json' ? 'Request Body (JSON / JSONata)' : 'Request Body (Raw)' }}
+      </label>
+      <textarea class="editor-pane" rows="5" style="margin-top:4px"
+        [value]="bodyValue()"
+        (input)="onBodyChange($any($event.target).value)"></textarea>
+    </div>
+  }
+
+  @if (bodyKind() === 'Raw') {
+    <div class="form-group full">
+      <label>Content-Type</label>
+      <input type="text" style="font-family:var(--mono)"
+        placeholder="text/xml"
+        [value]="rawContentType()"
+        (input)="onRawContentTypeChange($any($event.target).value)" />
+    </div>
+  }
+
+  @if (bodyKind() === 'FormData' || bodyKind() === 'UrlEncoded') {
+    <div class="form-group full">
+      <label>
+        {{ bodyKind() === 'FormData' ? 'Form Fields' : 'URL-Encoded Fields' }}
+      </label>
+      <ei-form-fields-table [fields]="formFields()" [allowFile]="bodyKind() === 'FormData'" />
+    </div>
+  }
+
+  <div class="form-group full">
+    <label>HTTP Headers</label>
+    <ei-headers-table [headers]="headers()" />
+    <div class="hint" ngNonBindable>
+      Values support placeholders: <code>{{storeKey}}</code>,
+      <code>{{$.path}}</code>, or mixed text.
+    </div>
+  </div>
+
 </div>

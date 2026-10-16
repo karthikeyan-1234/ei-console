@@ -18,6 +18,7 @@ import { shortId } from '../../../../core/utils/string.util';
 import { signal } from '@angular/core';   // add to the existing @angular/core import
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
 import { paginate } from '../../../../core/utils/paginate.util';
+import { formatLocalStamp } from '../../../../core/utils/date.util';
 
 @Component({
   selector: 'ei-executions-view',
@@ -43,6 +44,10 @@ readonly pageSize = 20;
   readonly pagedRows = computed(() =>
   paginate(this.rows(), this.page(), this.pageSize),
 );
+
+startedLabel(ex: Execution): string {
+  return formatLocalStamp(ex.started);
+}
 
 onPageChanged(p: number): void {
   this.page.set(p);

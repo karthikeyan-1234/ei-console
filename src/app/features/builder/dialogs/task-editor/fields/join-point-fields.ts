@@ -1,4 +1,4 @@
-import { Component, computed, input } from '@angular/core';
+import { Component, input } from '@angular/core';
 import {
   JoinMode,
   JoinPointTask,
@@ -20,18 +20,18 @@ export class JoinPointFieldsComponent {
   ];
 
   readonly timeoutActions: { value: JoinTimeoutAction; label: string }[] = [
-    { value: 'Fail',                  label: 'Fail the execution' },
-    { value: 'ContinueWithSettled',   label: 'Continue with settled branches' },
+    { value: 'Fail',                label: 'Fail the execution' },
+    { value: 'ContinueWithSettled', label: 'Continue with settled branches' },
   ];
 
-  readonly mode = computed<JoinMode>(() => this.task().joinMode ?? 'WaitAll');
-  readonly threshold = computed(() => this.task().joinThreshold ?? 1);
-  readonly timeoutSeconds = computed(() => this.task().joinTimeoutSeconds ?? 600);
-  readonly timeoutAction = computed<JoinTimeoutAction>(
-    () => this.task().joinTimeoutAction ?? 'Fail',
-  );
+  // Methods — task is mutated in place.
 
-  readonly isWaitN = computed(() => this.mode() === 'WaitN');
+  mode(): JoinMode { return this.task().joinMode ?? 'WaitAll'; }
+  threshold(): number { return this.task().joinThreshold ?? 1; }
+  timeoutSeconds(): number { return this.task().joinTimeoutSeconds ?? 600; }
+  timeoutAction(): JoinTimeoutAction { return this.task().joinTimeoutAction ?? 'Fail'; }
+
+  isWaitN(): boolean { return this.mode() === 'WaitN'; }
 
   onModeChange(v: string): void {
     this.task().joinMode = v as JoinMode;

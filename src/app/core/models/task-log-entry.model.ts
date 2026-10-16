@@ -13,4 +13,5 @@ export interface TaskLogEntry {
   completed: string;
   duration: number;
   summary: string;
+  error?: string; 
 }

@@ -4,20 +4,21 @@
 
     <div
       class="ctable-row head"
-      style="grid-template-columns:1.3fr 1.4fr .9fr .6fr .7fr .9fr .9fr">
+      style="grid-template-columns:1.3fr 1.4fr .9fr .6fr .7fr .9fr .8fr .9fr">
       <div>ITEM</div>
       <div>SUB-TASK</div>
       <div>STATUS</div>
       <div>HTTP</div>
       <div>ATTEMPTS</div>
       <div>COMPLETED</div>
+      <div>DURATION</div>
       <div>ACTION</div>
     </div>
 
     @for (s of rows(); track s.id + '-' + s.task) {
       <div
         class="ctable-row"
-        style="grid-template-columns:1.3fr 1.4fr .9fr .6fr .7fr .9fr .9fr">
+        style="grid-template-columns:1.3fr 1.4fr .9fr .6fr .7fr .9fr .8fr .9fr">
 
         <div style="font-family:var(--mono);font-size:10.5px">{{ s.id }}</div>
 
@@ -35,6 +36,7 @@
         <div>{{ s.http }}</div>
         <div>{{ s.attempts }}</div>
         <div style="font-family:var(--mono);font-size:10.5px">{{ s.completed }}</div>
+        <div style="font-family:var(--mono);font-size:10.5px">{{ s.duration || '—' }}</div>
 
         <div>
           @if (s.status === 'Failed') {

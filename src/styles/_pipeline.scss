@@ -197,3 +197,20 @@
     0 0 14px rgba(37,99,235,.35);
   transition:border-color .12s, box-shadow .12s;
 }
+
+/* Polish — subtask rows read as subordinate to their parent task.
+   Lighter weight, muted italic meta line, subtly off-white background. */
+.subtask-row{
+  background:#fafbfc;
+}
+.subtask-row .st-type{
+  font-weight:600;
+  font-size:9.5px;
+  letter-spacing:.05em;
+  color:#94a3b8;
+}
+.subtask-row .st-meta{
+  font-size:10px;
+  color:#94a3b8;
+  font-style:italic;
+}

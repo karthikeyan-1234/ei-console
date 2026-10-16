@@ -88,9 +88,12 @@ export class JobsTableComponent {
     return parts.join(' · ');
   }
 
-  needsPipeline(job: Job): boolean {
-    return job.pipeline.length === 0;
-  }
+needsPipeline(job: Job): boolean {
+  // Prefer the summary count from the list endpoint. Falls back to
+  // pipeline.length only when the full job has been loaded, which is when
+  // the pipeline array is actually populated.
+  return this.jobs.taskCount(job) === 0;
+}
 
   versionLabel(job: Job): string {
     return job.version ? `v${job.version}` : 'draft';
