@@ -3,3 +3,4 @@ export * from './date.util';
 export * from './json.util';
 export * from './pipeline.util';
 export * from './ref.util';
+export * from './paginate.util';

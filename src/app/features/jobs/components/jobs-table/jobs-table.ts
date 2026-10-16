@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, output } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { Job } from '../../../../core/models';
 import { JobService } from '../../../../core/services/job.service';
 import { TenantService } from '../../../../core/services/tenant.service';
@@ -10,10 +10,12 @@ import {
   StatusDotComponent,
   DotColor,
 } from '../../../../shared/components/status-dot/status-dot';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { paginate } from '../../../../core/utils/paginate.util';
 
 @Component({
   selector: 'ei-jobs-table',
-  imports: [StatusBadgeComponent, StatusDotComponent],
+  imports: [StatusBadgeComponent, StatusDotComponent, PaginationComponent],
   templateUrl: './jobs-table.html',
 })
 export class JobsTableComponent {
@@ -25,9 +27,32 @@ export class JobsTableComponent {
   readonly jobEdited = output<Job>();
   readonly jobRemoved = output<Job>();
 
+  readonly page = signal(1);
+  readonly pageSize = 20;
+
+  readonly pagedRows = computed(() =>
+    paginate(this.rows(), this.page(), this.pageSize),
+  );
+
   readonly tenantLabel = computed(() =>
     this.tenants.labelFor(this.tenants.activeTenantId()),
   );
+
+  constructor() {
+    // When the input row set shrinks below the current page — e.g. after a
+    // filter narrows the list — clamp the page so we never show a blank
+    // table. Does not reset to 1; keeps the operator where they were when
+    // the list merely grows.
+    effect(() => {
+      const total = this.rows().length;
+      const maxPage = Math.max(1, Math.ceil(total / this.pageSize));
+      if (this.page() > maxPage) this.page.set(maxPage);
+    });
+  }
+
+  onPageChanged(p: number): void {
+    this.page.set(p);
+  }
 
   statusVariant(job: Job): StatusVariant {
     switch (job.status) {

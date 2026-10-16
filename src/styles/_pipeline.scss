@@ -189,3 +189,11 @@
 .subtask-row .st-actions{display:flex;gap:3px;flex-shrink:0}
 
 .pipeline-node.sql .pn-icon{background:#0891b2}
+
+.pipeline-node.running{
+  border-color:var(--blue);
+  box-shadow:
+    0 0 0 2px var(--blue),
+    0 0 14px rgba(37,99,235,.35);
+  transition:border-color .12s, box-shadow .12s;
+}

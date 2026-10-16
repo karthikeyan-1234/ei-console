@@ -10,7 +10,7 @@
     <div>ACTIONS</div>
   </div>
 
-  @for (job of rows(); track job.id) {
+  @for (job of pagedRows(); track job.id) {
     <div
       class="ctable-row"
       style="grid-template-columns:2.2fr 1fr 1fr 1fr 1.4fr 1.1fr;cursor:pointer"
@@ -50,4 +50,10 @@
       No jobs for {{ tenantLabel() }}
     </div>
   }
+
+  <ei-pagination
+    [page]="page()"
+    [pageSize]="pageSize"
+    [totalItems]="rows().length"
+    (pageChanged)="onPageChanged($event)" />
 </div>

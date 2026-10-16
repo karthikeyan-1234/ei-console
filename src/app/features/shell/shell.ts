@@ -14,6 +14,8 @@ import { ConnectionService } from '../../core/services';
 import { JobService } from '../../core/services/job.service';
 import { StoredCredentialService } from '../../core/services/stored-credential.service';
 import { ChatService } from '../../core/services/chat.service';
+import { SignalrService } from '../../core/services/signalr.service';
+
 
 @Component({
   selector: 'ei-shell',
@@ -27,6 +29,7 @@ export class ShellComponent {
   private readonly auth = inject(AuthProfileService);
   private readonly executions = inject(ExecutionService);
   private readonly scatter = inject(ScatterGatherService);
+  private readonly signalr = inject(SignalrService);
 
   // Injected for their sidebar badge computed signals, but not loaded —
   // their backends don't exist. Kept here so re-enabling is one line each.
@@ -37,6 +40,7 @@ export class ShellComponent {
   private readonly chat = inject(ChatService);
 
   constructor() {
+    this.signalr.start();
     void this.boot();
   }
 

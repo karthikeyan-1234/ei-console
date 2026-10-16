@@ -1,0 +1,28 @@
+@if (totalItems() > 0) {
+  <div class="pagination">
+    <div class="pagination-info">{{ rangeLabel() }}</div>
+
+    <div class="pagination-controls">
+      <button
+        class="pagination-btn"
+        [disabled]="!canPrev()"
+        (click)="goPrev()">‹ Prev</button>
+
+      @for (p of pageNumbers(); track $index) {
+        @if (p === null) {
+          <span class="pagination-ellipsis">…</span>
+        } @else {
+          <button
+            class="pagination-btn"
+            [class.active]="p === page()"
+            (click)="goTo(p)">{{ p }}</button>
+        }
+      }
+
+      <button
+        class="pagination-btn"
+        [disabled]="!canNext()"
+        (click)="goNext()">Next ›</button>
+    </div>
+  </div>
+}

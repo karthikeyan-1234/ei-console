@@ -18,6 +18,8 @@ import { JsonFlowService } from '../../../../core/services/json-flow.service';
 import { JsonOverlayService } from '../../../../shared/services/json-overlay.service';
 
 import { TaskEditorService } from '../../services/task-editor.service';
+import { SignalrService } from '../../../../core/services/signalr.service';
+
 
 import {
   NodePath,
@@ -30,6 +32,7 @@ import {
   templateUrl: './pipeline-node.html',
 })
 export class PipelineNodeComponent {
+  private readonly signalr = inject(SignalrService);
   private readonly connections = inject(ConnectionService);
   private readonly dragState = inject(DragStateService);
 
@@ -143,7 +146,14 @@ readonly dragChildIdx = input<number | null>(null);
     }
 
     if (t.type === 'Transform' && t.iterate) classes.push('iterator-node');
-    return classes.join(' ');
+      if (t.type === 'Transform' && t.iterate) classes.push('iterator-node');
+
+  // SignalR-driven highlight. Reads the runningTaskIds signal inside
+  // SignalrService, so this computed recomputes whenever a task starts
+  // or completes and the class flips accordingly.
+  if (this.signalr.isTaskRunning(t.id)) classes.push('running');
+
+  return classes.join(' ');
   });
 
   readonly icon = computed(() => {

@@ -109,3 +109,10 @@ ei-chat-history-panel,
 ei-chat-history-item {
   display: contents;
 }
+ei-topbar,
+ei-console-frame,
+ei-console-sidebar,
+ei-modal-shell,
+ei-pagination {          /* ← add this */
+  display: block;
+}

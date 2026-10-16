@@ -16,7 +16,7 @@
       <div>SUMMARY</div>
     </div>
 
-    @for (l of rows(); track l.taskId + '-' + l.orderIndex) {
+    @for (l of pagedRows(); track l.taskId + '-' + l.orderIndex) {
       <div
         class="ctable-row"
         style="grid-template-columns:.5fr 2.4fr 1fr 1.1fr .8fr 1fr 1fr 1fr 1.6fr">
@@ -60,5 +60,11 @@
         No step log entries for this execution.
       </div>
     }
+
+    <ei-pagination
+      [page]="page()"
+      [pageSize]="pageSize"
+      [totalItems]="rows().length"
+      (pageChanged)="onPageChanged($event)" />
   </div>
 </div>

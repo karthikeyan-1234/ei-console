@@ -15,9 +15,13 @@ import {
 import { fmtHMS } from '../../../../core/utils/date.util';
 import { shortId } from '../../../../core/utils/string.util';
 
+import { signal } from '@angular/core';   // add to the existing @angular/core import
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination';
+import { paginate } from '../../../../core/utils/paginate.util';
+
 @Component({
   selector: 'ei-executions-view',
-  imports: [StatusBadgeComponent, StatusDotComponent],
+  imports: [StatusBadgeComponent, StatusDotComponent, PaginationComponent],
   templateUrl: './executions-view.html',
 })
 export class ExecutionsViewComponent {
@@ -25,6 +29,8 @@ export class ExecutionsViewComponent {
   private readonly tenants = inject(TenantService);
   private readonly toasts = inject(ToastService);
   private readonly router = inject(Router);
+  readonly page = signal(1);
+readonly pageSize = 20;
 
   readonly rows = this.executions.scopedExecutions;
 
@@ -33,6 +39,14 @@ export class ExecutionsViewComponent {
     const label = this.tenants.labelFor(this.tenants.activeTenantId());
     return `${count} execution${count === 1 ? '' : 's'} for ${label}`;
   });
+
+  readonly pagedRows = computed(() =>
+  paginate(this.rows(), this.page(), this.pageSize),
+);
+
+onPageChanged(p: number): void {
+  this.page.set(p);
+}
 
   onRefresh(): void {
     this.toasts.success('Executions refreshed');
