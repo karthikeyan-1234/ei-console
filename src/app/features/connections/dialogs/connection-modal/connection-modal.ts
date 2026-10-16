@@ -199,6 +199,29 @@ export class ConnectionModalComponent implements OnInit {
     const name = this.name().trim();
     if (!name) { this.error.set('Name required'); return; }
 
+      // For FTP/SFTP the port is required by the backend CHECK constraint
+  // CK_connections_port_protocol. Compute it explicitly rather than via
+  // a nested ?? chain — the chain silently produces undefined when any
+  // intermediate value is null or invalid, and the API projection turns
+  // undefined into null, which then trips the constraint.
+  let fileTransferPort: number | null = null;
+  if (this.isFileTransfer()) {
+    const fromSignal = this.port();
+    if (typeof fromSignal === 'number'
+        && !isNaN(fromSignal)
+        && fromSignal >= 1
+        && fromSignal <= 65535) {
+      fileTransferPort = fromSignal;
+    } else {
+      fileTransferPort = this.defaultPortFor();
+    }
+
+    if (fileTransferPort === null) {
+      this.error.set('Port is required for FTP and SFTP connections.');
+      return;
+    }
+  }
+
     const headers = this.headers().trim() || '{"Accept":"application/json"}';
     if (this.isHttpProtocol()) {
       try {
@@ -226,7 +249,7 @@ export class ConnectionModalComponent implements OnInit {
       provider: this.provider().trim() || 'Unknown',
       protocol: this.protocol(),
       baseUrl,
-      port: this.isFileTransfer() ? (this.port() ?? this.defaultPortFor() ?? undefined) : undefined,
+      port: this.isFileTransfer() ? (fileTransferPort ?? undefined) : undefined,
       tenant: this.tenant(),
       authProfile: this.authProfile(),
       timeout: this.timeout(),
