@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
-import { ExecutionApi } from '../execution.api';
-import { Execution } from '../../models';
+import { ExecutionApi, TriggerResult } from '../execution.api';import { Execution } from '../../models';
 import { SEED_EXECUTIONS } from './seed.data';
+
 
 @Injectable()
 export class FakeExecutionApi extends ExecutionApi {
@@ -15,6 +15,16 @@ export class FakeExecutionApi extends ExecutionApi {
     const e = this.rows.find(x => x.id === id);
     return e ? JSON.parse(JSON.stringify(e)) : undefined;
   }
+
+  async trigger(jobId: number): Promise<TriggerResult> {
+  // The fake API has no real executions; return a synthetic id and let the
+  // caller's UI pretend it started. Only reached when useFakeApi=true.
+  const executionId = `fake-${Math.random().toString(36).slice(2, 10)}`;
+  return {
+    executionId,
+    statusUrl: `/api/ei/executions/${executionId}`,
+  };
+}
 
   async replayScatterItem(execId: string, _itemId: string): Promise<void> {
     const e = this.rows.find(x => x.id === execId);

@@ -29,4 +29,10 @@ export class ApiPushFieldsComponent {
   onMethodChange(v: string): void { this.task().method = v as HttpMethod; }
   onTimeoutChange(v: string): void { this.task().timeout = parseInt(v, 10) || 30; }
   onBodyChange(v: string): void { this.task().body = v; }
+
+  /** Template helper — coerce both sides to string. Angular templates
+   *  can't call String() directly. */
+  same(a: unknown, b: unknown): boolean {
+    return String(a ?? '') === String(b ?? '');
+  }
 }

@@ -52,6 +52,9 @@ export interface ApiPullTask extends BaseTask {
  * context under `outputKey` and can be transformed, filtered, or iterated
  * by any downstream task.
  */
+
+export type SqlQueryMode = 'Reader' | 'NonQuery' | 'Scalar';
+
 export interface SqlQueryTask extends BaseTask {
   type: 'SqlQuery';
   connectionId: string;
@@ -64,6 +67,8 @@ export interface SqlQueryTask extends BaseTask {
   outputKey?: string;
   /** Sample result set (JSON array) for the demo. Real execution uses the connection. */
   sampleResponse?: string;
+  /** The mode in which the query is executed. */
+  queryMode?: SqlQueryMode;
 }
 
 export interface TransformTask extends BaseTask {

@@ -25,6 +25,7 @@ export class AuthCardComponent {
       case 'SqlServerConnectionString': return '🗄';
       case 'FtpCredentials':            return '📁';
       case 'SftpKeyCredentials':        return '📂';
+      case 'SubscriptionTokenExchange': return '🎫';
       default:                          return '🛡';
     }
   });
@@ -39,6 +40,7 @@ export class AuthCardComponent {
       case 'SqlServerConnectionString': return 'SQL Server Connection String';
       case 'FtpCredentials':            return 'FTP Credentials';
       case 'SftpKeyCredentials':        return 'SFTP Key Credentials';
+      case 'SubscriptionTokenExchange': return 'Subscription Token Exchange';
       default:                          return this.profile().type;
     }
   });
@@ -62,6 +64,12 @@ export class AuthCardComponent {
     if (p.type === 'FtpCredentials' || p.type === 'SftpKeyCredentials') {
       return p.username ?? '';
     }
+    if (p.type === 'SubscriptionTokenExchange') {
+  // Show the token endpoint hostname — safest identifier to display.
+  try {
+    return new URL(p.stTokenEndpoint ?? '').host;
+  } catch { return p.stTokenEndpoint ?? ''; }
+}
     return '';
   });
 

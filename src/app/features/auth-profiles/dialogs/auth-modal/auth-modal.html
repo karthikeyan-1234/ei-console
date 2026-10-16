@@ -38,6 +38,9 @@
         <option value="SftpKeyCredentials" [selected]="type() === 'SftpKeyCredentials'">
           SFTP Key Credentials (SSH private key)
         </option>
+        <option value="SubscriptionTokenExchange" [selected]="type() === 'SubscriptionTokenExchange'">
+  Subscription Token Exchange (Azure APIM and similar)
+</option>
       </select>
     </div>
 
@@ -328,6 +331,240 @@
         }
       </div>
     }
+
+        @if (showSubscriptionTokenBlock()) {
+      <div class="form-group full">
+        <div style="padding:10px 12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;margin-bottom:12px;font-size:10.5px;color:#3730a3;line-height:1.5">
+          <b>🎫 Subscription Token Exchange</b> — POSTs credentials to a token endpoint and
+          caches the returned bearer token. Covers Azure APIM and similar vendors where
+          access requires a subscription key plus a username/password/secretKey body.
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group full">
+            <label>Token Endpoint URL</label>
+            <input type="text" style="font-family:var(--mono)"
+              placeholder="https://vendor.example.com/api/Authorize/authorize"
+              [value]="form().stTokenEndpoint"
+              (input)="patchForm('stTokenEndpoint', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Content Type</label>
+            <select (change)="patchForm('stTokenContentType', $any($event.target).value)">
+              <option value="application/json"
+                [selected]="form().stTokenContentType === 'application/json'">
+                application/json
+              </option>
+              <option value="application/x-www-form-urlencoded"
+                [selected]="form().stTokenContentType === 'application/x-www-form-urlencoded'">
+                application/x-www-form-urlencoded
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Grant Type</label>
+            <input type="text" style="font-family:var(--mono)"
+              [value]="form().stGrantType"
+              (input)="patchForm('stGrantType', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Subscription Key Placement</label>
+            <select (change)="patchForm('stSubscriptionKeyMode', $any($event.target).value)">
+              <option value="Header" [selected]="form().stSubscriptionKeyMode === 'Header'">Header</option>
+              <option value="Query"  [selected]="form().stSubscriptionKeyMode === 'Query'">Query string</option>
+              <option value="None"   [selected]="form().stSubscriptionKeyMode === 'None'">None</option>
+            </select>
+          </div>
+
+          @if (form().stSubscriptionKeyMode === 'Header') {
+            <div class="form-group">
+              <label>Header Name</label>
+              <input type="text" style="font-family:var(--mono)"
+                [value]="form().stSubscriptionKeyHeader"
+                (input)="patchForm('stSubscriptionKeyHeader', $any($event.target).value)" />
+            </div>
+          }
+          @if (form().stSubscriptionKeyMode === 'Query') {
+            <div class="form-group">
+              <label>Query Param Name</label>
+              <input type="text" style="font-family:var(--mono)"
+                [value]="form().stSubscriptionKeyQueryParam"
+                (input)="patchForm('stSubscriptionKeyQueryParam', $any($event.target).value)" />
+            </div>
+          }
+
+          <div class="form-group full">
+            <label>Credential Storage Mode</label>
+            <select (change)="onStorageModeInput($any($event.target).value)">
+              <option value="KeyVault" [selected]="storageMode() === 'KeyVault'">
+                Key Vault reference (recommended)
+              </option>
+              <option value="Inline" [selected]="storageMode() === 'Inline'">
+                Inline (stored in the database)
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group full">
+            <label>Username</label>
+            <input type="text" style="font-family:var(--mono)"
+              [value]="form().username"
+              (input)="patchForm('username', $any($event.target).value)" />
+          </div>
+
+          @if (!isInlineMode()) {
+            <div class="form-group full">
+              <label>Password (Key Vault secret URI)</label>
+              <input type="text" style="font-family:var(--mono)"
+                placeholder="https://vault.azure.net/secrets/..."
+                [value]="form().stPasswordSecretRef"
+                (input)="patchForm('stPasswordSecretRef', $any($event.target).value)" />
+            </div>
+            <div class="form-group full">
+              <label>Secret Key (Key Vault secret URI) — optional</label>
+              <input type="text" style="font-family:var(--mono)"
+                [value]="form().stSecretKeySecretRef"
+                (input)="patchForm('stSecretKeySecretRef', $any($event.target).value)" />
+              <div class="hint">Leave empty if the vendor does not require a secret key.</div>
+            </div>
+            <div class="form-group full">
+              <label>Subscription Key (Key Vault secret URI)</label>
+              <input type="text" style="font-family:var(--mono)"
+                [value]="form().stSubscriptionKeySecretRef"
+                (input)="patchForm('stSubscriptionKeySecretRef', $any($event.target).value)" />
+            </div>
+          } @else {
+            <div class="form-group full">
+              <div style="padding:12px 14px;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;margin-bottom:12px;font-size:11px;color:#991b1b;line-height:1.6">
+                <b>⚠ Warning — credentials stored in plain text</b><br>
+                Password, secret key, and subscription key will be written to the database.
+              </div>
+            </div>
+            <div class="form-group full">
+              <label>Password</label>
+              <input type="password" style="font-family:var(--mono)"
+                [value]="form().stInlinePassword"
+                (input)="patchForm('stInlinePassword', $any($event.target).value)" />
+            </div>
+            <div class="form-group full">
+              <label>Secret Key — optional</label>
+              <input type="password" style="font-family:var(--mono)"
+                [value]="form().stInlineSecretKey"
+                (input)="patchForm('stInlineSecretKey', $any($event.target).value)" />
+            </div>
+            <div class="form-group full">
+              <label>Subscription Key</label>
+              <input type="password" style="font-family:var(--mono)"
+                [value]="form().stInlineSubscriptionKey"
+                (input)="patchForm('stInlineSubscriptionKey', $any($event.target).value)" />
+            </div>
+          }
+
+          <div class="form-group full">
+            <details>
+              <summary style="cursor:pointer;font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">
+                Wire field names — advanced
+              </summary>
+              <div class="form-grid" style="margin-top:8px">
+                <div class="form-group">
+                  <label>Username Field</label>
+                  <input type="text" style="font-family:var(--mono)"
+                    [value]="form().stUsernameFieldName"
+                    (input)="patchForm('stUsernameFieldName', $any($event.target).value)" />
+                </div>
+                <div class="form-group">
+                  <label>Password Field</label>
+                  <input type="text" style="font-family:var(--mono)"
+                    [value]="form().stPasswordFieldName"
+                    (input)="patchForm('stPasswordFieldName', $any($event.target).value)" />
+                </div>
+                <div class="form-group">
+                  <label>Secret Key Field</label>
+                  <input type="text" style="font-family:var(--mono)"
+                    [value]="form().stSecretKeyFieldName"
+                    (input)="patchForm('stSecretKeyFieldName', $any($event.target).value)" />
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="form-group">
+            <label>Token JSON Path</label>
+            <input type="text" style="font-family:var(--mono)"
+              [value]="form().stTokenJsonPath"
+              (input)="patchForm('stTokenJsonPath', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group">
+            <label>Token Prefix</label>
+            <input type="text" style="font-family:var(--mono)"
+              [value]="form().stTokenPrefix"
+              (input)="patchForm('stTokenPrefix', $any($event.target).value)" />
+          </div>
+
+          <div class="form-group full">
+            <label>Success Requires JSON Path — optional</label>
+            <input type="text" style="font-family:var(--mono)"
+              placeholder="$.data — must be non-null for the call to count as success"
+              [value]="form().stSuccessRequiresJsonPath"
+              (input)="patchForm('stSuccessRequiresJsonPath', $any($event.target).value)" />
+            <div class="hint">
+              Some vendors return 200 with a failure message inside the body
+              (e.g. "User Not Found."). Set this to the path that must exist for
+              a call to count as success.
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>TTL Source</label>
+            <select (change)="patchForm('stTtlSource', $any($event.target).value)">
+              <option value="JwtExp"        [selected]="form().stTtlSource === 'JwtExp'">From JWT exp claim</option>
+              <option value="ResponseField" [selected]="form().stTtlSource === 'ResponseField'">From response field</option>
+              <option value="Fixed"         [selected]="form().stTtlSource === 'Fixed'">Fixed seconds</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Default TTL (seconds)</label>
+            <input type="number"
+              [value]="form().stDefaultTtlSeconds"
+              (input)="patchForm('stDefaultTtlSeconds', $any($event.target).value)" />
+          </div>
+
+          @if (form().stTtlSource === 'ResponseField') {
+            <div class="form-group full">
+              <label>Expires-In JSON Path</label>
+              <input type="text" style="font-family:var(--mono)"
+                placeholder="$.expires_in"
+                [value]="form().stExpiresInJsonPath"
+                (input)="patchForm('stExpiresInJsonPath', $any($event.target).value)" />
+            </div>
+          }
+
+          <div class="form-group full">
+            <details>
+              <summary style="cursor:pointer;font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.04em">
+                Additional body fields — advanced
+              </summary>
+              <div style="margin-top:8px">
+                <label>Extra JSON merged into the request body</label>
+                <textarea class="editor-pane" rows="3" style="margin-top:4px"
+                  placeholder='{"client_id": "…"}'
+                  [value]="form().stAdditionalBodyJson"
+                  (input)="patchForm('stAdditionalBodyJson', $any($event.target).value)"></textarea>
+                <div class="hint">
+                  Only needed when the vendor requires fields beyond username / password / secret key.
+                </div>
+              </div>
+            </details>
+          </div>
+        </div>
+      </div>
+    }
+
   </div>
 
   <button modalFooter class="btn-outline btn" (click)="onCancel()">Cancel</button>

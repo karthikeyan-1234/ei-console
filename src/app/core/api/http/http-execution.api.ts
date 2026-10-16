@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { ExecutionApi } from '../execution.api';
+import { ExecutionApi, TriggerResult } from '../execution.api';
 import { environment } from '../../../../environments/environment';
 import { Execution } from '../../models';
 
@@ -44,6 +44,12 @@ export class HttpExecutionApi extends ExecutionApi {
     );
     return row ? toExecution(row) : undefined;
   }
+
+  async trigger(jobId: number): Promise<TriggerResult> {
+  return firstValueFrom(
+    this.http.post<TriggerResult>(`${this.base}/trigger/${jobId}`, {}),
+  );
+}
 
   async replayScatterItem(execId: string, itemId: string): Promise<void> {
     await firstValueFrom(

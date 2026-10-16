@@ -26,4 +26,10 @@ export class ApiPullFieldsComponent {
   onTimeoutChange(v: string): void { this.task().timeout = parseInt(v, 10) || 30; }
   onOutputKeyChange(v: string): void { this.task().outputKey = v; }
   onSampleResponseChange(v: string): void { this.task().sampleResponse = v; }
+
+  /** Template helper — coerce both sides to string. Angular templates
+ *  can't call String() directly. */
+same(a: unknown, b: unknown): boolean {
+  return String(a ?? '') === String(b ?? '');
+}
 }

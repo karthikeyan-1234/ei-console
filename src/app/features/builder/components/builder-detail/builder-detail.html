@@ -7,6 +7,13 @@
           <span style="font-size:12px;font-weight:700;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:6px">
             {{ versionLabel() }}
           </span>
+          @if (hasUnpublishedChanges()) {
+            <span
+              style="font-size:11px;font-weight:700;background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:6px;margin-left:6px"
+              title="Working version has changes not yet published">
+              DRAFT
+            </span>
+          }
           @if (runningExecution(); as run) {
             <span
               style="font-size:11px;font-weight:700;background:#e5f2ff;color:#1d4ed8;padding:2px 8px;border-radius:6px;margin-left:6px;font-family:var(--mono)"
@@ -19,12 +26,24 @@
         <div class="bd-sub">{{ j.slug }} · {{ tenantLabel() }}</div>
       </div>
 
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="btn btn-outline btn-sm" (click)="onValidate()">Validate</button>
-        <button class="btn btn-sm" (click)="onPublish()">
-          {{ publishVersionLabel() }}
-        </button>
-      </div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+  <button class="btn btn-outline btn-sm" (click)="onValidate()">Validate</button>
+
+  <button
+    class="btn btn-outline btn-sm"
+    style="color:#166534;border-color:#86efac"
+    (click)="onRunNow()"
+    [disabled]="!canRun()"
+    [title]="canRun()
+      ? 'Start a manual execution of this job'
+      : 'Publish the job before running it'">
+    ▶ Run now
+  </button>
+
+  <button class="btn btn-sm" (click)="onPublish()">
+    {{ publishButtonLabel() }}
+  </button>
+</div>
     </div>
 
     <div class="bd-kv">
@@ -37,8 +56,12 @@
         <div class="kv-val">{{ j.cron || '—' }}</div>
       </div>
       <div>
-        <div class="kv-label">Published version</div>
-        <div class="kv-val">{{ j.version ? 'v' + j.version : 'none — draft' }}</div>
+        <div class="kv-label">Working version</div>
+        <div class="kv-val">{{ j.version ? 'v' + j.version : '—' }}</div>
+      </div>
+      <div>
+        <div class="kv-label">Published</div>
+        <div class="kv-val">{{ publishedVersionLabel() }}</div>
       </div>
       <div>
         <div class="kv-label">Tasks · Branches</div>
@@ -62,8 +85,12 @@
         </div>
       } @else {
         <div class="callout good">
-          <b>Validation passed.</b> Publishing creates an immutable snapshot as
-          v{{ (j.version || 0) + 1 }}.
+          <b>Validation passed.</b>
+          @if (hasUnpublishedChanges()) {
+            Publishing will mark v{{ j.version }} as the immutable, live version.
+          } @else {
+            This version is already published and live.
+          }
         </div>
       }
     }

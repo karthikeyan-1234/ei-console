@@ -42,11 +42,25 @@ export class BuilderDetailComponent {
     return j ? this.tenants.labelFor(j.tenant) : '';
   });
 
-  readonly versionLabel = computed(() => {
-    const j = this.job();
-    if (!j) return '';
-    return j.version ? `v${j.version}` : 'draft';
-  });
+readonly versionLabel = computed(() => {
+  const j = this.job();
+  if (!j) return '';
+  return j.version ? `v${j.version}` : 'draft';
+});
+
+readonly hasUnpublishedChanges = computed(() => {
+  const j = this.job();
+  if (!j) return false;
+  if (!j.publishedVersion) return true;      // never published
+  return j.version !== j.publishedVersion;    // working ahead of published
+});
+
+readonly publishedVersionLabel = computed(() => {
+  const j = this.job();
+  if (!j) return '—';
+  if (!j.publishedVersion) return 'none — draft';
+  return `v${j.publishedVersion}`;
+});
 
   readonly taskCount = computed(() => {
     const j = this.job();
@@ -76,11 +90,11 @@ export class BuilderDetailComponent {
     return this.executions.runningForJob(j.id) ?? null;
   });
 
-  readonly runningElapsedLabel = computed(() => {
-    const e = this.runningExecution();
-    return e ? fmtHMS(e.elapsedSec) : '';
-  });
-
+readonly runningElapsedLabel = computed(() => {
+  const e = this.runningExecution();
+  if (!e) return '';
+  return fmtHMS(this.executions.elapsedFor(e.id));
+});
   private readonly _validation = signal<ValidationResult | null>(null);
 
   readonly validation = computed<ValidationResult | null>(() => {
@@ -90,10 +104,17 @@ export class BuilderDetailComponent {
     return v.jobId === j.id ? v : null;
   });
 
-  readonly publishVersionLabel = computed(() => {
-    const j = this.job();
-    return j ? `Publish v${(j.version || 0) + 1}` : 'Publish';
-  });
+
+
+readonly publishButtonLabel = computed(() => {
+  const j = this.job();
+  if (!j) return 'Publish';
+  if (!j.publishedVersion) return `Publish v${j.version || 1}`;
+  if (j.version === j.publishedVersion) return `Re-publish v${j.version}`;
+  return `Publish v${j.version}`;
+});
+
+readonly canRun = computed(() => this.job()?.status === 'Active');
 
   constructor() {
     effect(() => {
@@ -163,4 +184,22 @@ export class BuilderDetailComponent {
       `Published v${updated.version}${wasDraft ? ' — job is now Active' : ''}`,
     );
   }
+
+  async onRunNow(): Promise<void> {
+  const j = this.job();
+  if (!j) return;
+
+  if (j.status !== 'Active') {
+    this.toasts.warn('Job is not active — publish it first.');
+    return;
+  }
+
+  try {
+    const executionId = await this.executions.trigger(j.id);
+    const shortId = executionId.substring(0, 8);
+    this.toasts.success(`Run started — execution ${shortId}…`);
+  } catch (err) {
+    this.toasts.error(`Run failed: ${(err as Error).message ?? 'unknown error'}`);
+  }
+}
 }

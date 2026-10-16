@@ -53,4 +53,14 @@ export class SqlQueryFieldsComponent {
       this.previewStatus.set('error');
     }
   }
+
+  onQueryModeChange(v: string): void {
+  this.task().queryMode = v as SqlQueryTask['queryMode'];
+}
+
+  /** Template helper — coerce both sides to string. Angular templates
+   *  can't call String() directly. */
+  same(a: unknown, b: unknown): boolean {
+    return String(a ?? '') === String(b ?? '');
+  }
 }

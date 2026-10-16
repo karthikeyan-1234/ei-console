@@ -11,7 +11,7 @@
     <select (change)="onConnectionChange($any($event.target).value)">
       <option value="" [selected]="!task().connectionId">— Select —</option>
       @for (c of connectionOptions(); track c.id) {
-        <option [value]="c.id" [selected]="c.id === task().connectionId">
+        <option [value]="c.id" [selected]="same(c.id, task().connectionId)">
           {{ c.name }} · {{ c.provider }}
         </option>
       }
@@ -28,7 +28,7 @@
     <select (change)="onAuthChange($any($event.target).value)">
       <option value="" [selected]="!task().authId">— Connection default —</option>
       @for (a of authOptions(); track a.id) {
-        <option [value]="a.id" [selected]="a.id === task().authId">{{ a.name }}</option>
+        <option [value]="a.id" [selected]="same(a.id, task().authId)">{{ a.name }}</option>
       }
     </select>
   </div>
@@ -55,6 +55,24 @@
       [value]="timeoutValue()"
       (input)="onTimeoutChange($any($event.target).value)" />
   </div>
+
+<div class="form-group">
+  <label>Execution Mode</label>
+  <select (change)="onQueryModeChange($any($event.target).value)">
+    <option value="Reader"   [selected]="(task().queryMode || 'Reader') === 'Reader'">
+      Reader — returns rows (SELECT)
+    </option>
+    <option value="NonQuery" [selected]="task().queryMode === 'NonQuery'">
+      NonQuery — returns rows affected (INSERT / UPDATE / DELETE / MERGE)
+    </option>
+    <option value="Scalar"   [selected]="task().queryMode === 'Scalar'">
+      Scalar — returns one value
+    </option>
+  </select>
+  <div class="hint">
+    NonQuery is for writes. Always include WHERE, or the entire table updates.
+  </div>
+</div>
 
   <div class="form-group">
     <label>Store output as key</label>

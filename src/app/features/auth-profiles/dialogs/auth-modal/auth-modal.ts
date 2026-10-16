@@ -41,10 +41,57 @@ interface AuthForm {
   sftpPassphraseSecretRef: string;
   sftpInlinePrivateKey: string;
   sftpInlinePassphrase: string;
-
-    // FTP / SFTP — reference to a stored credential in the EI vault
   storedCredentialId: string;
+
+  // SubscriptionTokenExchange
+  stTokenEndpoint: string;
+  stTokenContentType: string;
+  stGrantType: string;
+  stSubscriptionKeyMode: string;
+  stSubscriptionKeyHeader: string;
+  stSubscriptionKeyQueryParam: string;
+  stUsernameFieldName: string;
+  stPasswordFieldName: string;
+  stSecretKeyFieldName: string;
+  stPasswordSecretRef: string;
+  stInlinePassword: string;
+  stSecretKeySecretRef: string;
+  stInlineSecretKey: string;
+  stSubscriptionKeySecretRef: string;
+  stInlineSubscriptionKey: string;
+  stSuccessRequiresJsonPath: string;
+  stTokenJsonPath: string;
+  stTokenPrefix: string;
+  stTtlSource: string;
+  stExpiresInJsonPath: string;
+  stDefaultTtlSeconds: string;   // kept as string; parsed on save
+  stAdditionalBodyJson: string;
 }
+
+const ST_DEFAULTS = {
+  stTokenEndpoint: '',
+  stTokenContentType: 'application/json',
+  stGrantType: 'password',
+  stSubscriptionKeyMode: 'Header',
+  stSubscriptionKeyHeader: 'Ocp-Apim-Subscription-Key',
+  stSubscriptionKeyQueryParam: '',
+  stUsernameFieldName: 'username',
+  stPasswordFieldName: 'password',
+  stSecretKeyFieldName: 'secretKey',
+  stPasswordSecretRef: '',
+  stInlinePassword: '',
+  stSecretKeySecretRef: '',
+  stInlineSecretKey: '',
+  stSubscriptionKeySecretRef: '',
+  stInlineSubscriptionKey: '',
+  stSuccessRequiresJsonPath: '$.data',
+  stTokenJsonPath: '$.data.accessToken',
+  stTokenPrefix: 'Bearer',
+  stTtlSource: 'JwtExp',
+  stExpiresInJsonPath: '',
+  stDefaultTtlSeconds: '7200',
+  stAdditionalBodyJson: '',
+};
 
 const EMPTY_FORM: AuthForm = {
   kcBaseUrl: '', realm: '', clientId: '', secretRef: '', audience: '', scope: '',
@@ -55,6 +102,7 @@ const EMPTY_FORM: AuthForm = {
   sftpPrivateKeySecretRef: '', sftpPassphraseSecretRef: '',
   sftpInlinePrivateKey: '', sftpInlinePassphrase: '',
   storedCredentialId: '',
+  ...ST_DEFAULTS,
 };
 
 @Component({
@@ -93,6 +141,7 @@ export class AuthModalComponent implements OnInit {
   readonly showSqlServerBlock = computed(() => this.type() === 'SqlServerConnectionString');
   readonly showFtpBlock = computed(() => this.type() === 'FtpCredentials');
   readonly showSftpBlock = computed(() => this.type() === 'SftpKeyCredentials');
+  readonly showSubscriptionTokenBlock = computed(() => this.type() === 'SubscriptionTokenExchange');
 
   readonly isInlineMode = computed(() => this.storageMode() === 'Inline');
 
@@ -122,9 +171,8 @@ export class AuthModalComponent implements OnInit {
       : 'Only secret references are stored — never raw credentials.',
   );
 
-    private readonly storedCreds = inject(StoredCredentialService);
+  private readonly storedCreds = inject(StoredCredentialService);
 
-      /** Credentials compatible with the current FTP/SFTP type. */
   readonly availableStoredCredentials = computed(() => {
     const kind = this.type() === 'SftpKeyCredentials' ? 'SftpPrivateKey' : 'FtpPassword';
     return this.storedCreds.scopedCredentials().filter(c => c.kind === kind);
@@ -135,7 +183,6 @@ export class AuthModalComponent implements OnInit {
     if (t === 'SftpKeyCredentials') return 'Private Key';
     return 'Password';
   });
-    
 
   ngOnInit(): void {
     const p = this.profile();
@@ -165,6 +212,31 @@ export class AuthModalComponent implements OnInit {
         sftpInlinePrivateKey: p.sftpInlinePrivateKey ?? '',
         sftpInlinePassphrase: p.sftpInlinePassphrase ?? '',
         storedCredentialId: p.storedCredentialId ?? '',
+        // SubscriptionTokenExchange — pre-fill from loaded profile
+        stTokenEndpoint: p.stTokenEndpoint ?? ST_DEFAULTS.stTokenEndpoint,
+        stTokenContentType: p.stTokenContentType ?? ST_DEFAULTS.stTokenContentType,
+        stGrantType: p.stGrantType ?? ST_DEFAULTS.stGrantType,
+        stSubscriptionKeyMode: p.stSubscriptionKeyMode ?? ST_DEFAULTS.stSubscriptionKeyMode,
+        stSubscriptionKeyHeader: p.stSubscriptionKeyHeader ?? ST_DEFAULTS.stSubscriptionKeyHeader,
+        stSubscriptionKeyQueryParam: p.stSubscriptionKeyQueryParam ?? ST_DEFAULTS.stSubscriptionKeyQueryParam,
+        stUsernameFieldName: p.stUsernameFieldName ?? ST_DEFAULTS.stUsernameFieldName,
+        stPasswordFieldName: p.stPasswordFieldName ?? ST_DEFAULTS.stPasswordFieldName,
+        stSecretKeyFieldName: p.stSecretKeyFieldName ?? ST_DEFAULTS.stSecretKeyFieldName,
+        stPasswordSecretRef: p.stPasswordSecretRef ?? ST_DEFAULTS.stPasswordSecretRef,
+        stInlinePassword: p.stInlinePassword ?? ST_DEFAULTS.stInlinePassword,
+        stSecretKeySecretRef: p.stSecretKeySecretRef ?? ST_DEFAULTS.stSecretKeySecretRef,
+        stInlineSecretKey: p.stInlineSecretKey ?? ST_DEFAULTS.stInlineSecretKey,
+        stSubscriptionKeySecretRef: p.stSubscriptionKeySecretRef ?? ST_DEFAULTS.stSubscriptionKeySecretRef,
+        stInlineSubscriptionKey: p.stInlineSubscriptionKey ?? ST_DEFAULTS.stInlineSubscriptionKey,
+        stSuccessRequiresJsonPath: p.stSuccessRequiresJsonPath ?? ST_DEFAULTS.stSuccessRequiresJsonPath,
+        stTokenJsonPath: p.stTokenJsonPath ?? ST_DEFAULTS.stTokenJsonPath,
+        stTokenPrefix: p.stTokenPrefix ?? ST_DEFAULTS.stTokenPrefix,
+        stTtlSource: p.stTtlSource ?? ST_DEFAULTS.stTtlSource,
+        stExpiresInJsonPath: p.stExpiresInJsonPath ?? ST_DEFAULTS.stExpiresInJsonPath,
+        stDefaultTtlSeconds: p.stDefaultTtlSeconds != null
+          ? String(p.stDefaultTtlSeconds)
+          : ST_DEFAULTS.stDefaultTtlSeconds,
+        stAdditionalBodyJson: p.stAdditionalBodyJson ?? ST_DEFAULTS.stAdditionalBodyJson,
       });
     } else {
       this.storageMode.set('KeyVault');
@@ -200,9 +272,107 @@ export class AuthModalComponent implements OnInit {
     const p = this.profile();
     const mode = this.storageMode();
 
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
+    // SubscriptionTokenExchange
+    // ------------------------------------------------------------
+    if (type === 'SubscriptionTokenExchange') {
+      const endpoint = f.stTokenEndpoint.trim();
+      if (!endpoint) { this.error.set('Token endpoint URL is required.'); return; }
+      if (!/^https?:\/\//i.test(endpoint)) {
+        this.error.set('Token endpoint must start with http:// or https://');
+        return;
+      }
+      const username = f.username.trim();
+      if (!username) { this.error.set('Username is required.'); return; }
+
+      const ttlSeconds = parseInt(f.stDefaultTtlSeconds, 10) || 7200;
+
+      if (mode === 'KeyVault') {
+        const pwdRef = f.stPasswordSecretRef.trim();
+        if (!pwdRef) {
+          this.error.set('A Key Vault reference for the password is required.');
+          return;
+        }
+        // Full payload — send every field. This makes the update a
+        // whole-row replace, so a partial form cannot null out structural
+        // values on the server.
+        const payload: Partial<AuthProfile> = {
+          name, type, credentialStorageMode: 'KeyVault',
+          username,
+          stTokenEndpoint: endpoint,
+          stTokenContentType: f.stTokenContentType,
+          stGrantType: f.stGrantType,
+          stSubscriptionKeyMode: f.stSubscriptionKeyMode,
+          stSubscriptionKeyHeader: f.stSubscriptionKeyHeader || undefined,
+          stSubscriptionKeyQueryParam: f.stSubscriptionKeyQueryParam || undefined,
+          stUsernameFieldName: f.stUsernameFieldName,
+          stPasswordFieldName: f.stPasswordFieldName,
+          stSecretKeyFieldName: f.stSecretKeyFieldName || undefined,
+          stPasswordSecretRef: pwdRef,
+          stInlinePassword: undefined,
+          stSecretKeySecretRef: f.stSecretKeySecretRef || undefined,
+          stInlineSecretKey: undefined,
+          stSubscriptionKeySecretRef: f.stSubscriptionKeySecretRef || undefined,
+          stInlineSubscriptionKey: undefined,
+          stSuccessRequiresJsonPath: f.stSuccessRequiresJsonPath || undefined,
+          stTokenJsonPath: f.stTokenJsonPath,
+          stTokenPrefix: f.stTokenPrefix,
+          stTtlSource: f.stTtlSource,
+          stExpiresInJsonPath: f.stTtlSource === 'ResponseField'
+            ? f.stExpiresInJsonPath || undefined
+            : undefined,
+          stDefaultTtlSeconds: ttlSeconds,
+          stAdditionalBodyJson: f.stAdditionalBodyJson || undefined,
+        };
+        if (p) this.saved.emit({ profile: p, patch: payload, isNew: false });
+        else this.saved.emit({
+          profile: { id: '', name, type, tenant: '', ...payload } as AuthProfile,
+          patch: {}, isNew: true,
+        });
+        return;
+      }
+
+      // Inline mode
+      if (!f.stInlinePassword) { this.error.set('Password is required.'); return; }
+      const payload: Partial<AuthProfile> = {
+        name, type, credentialStorageMode: 'Inline',
+        username,
+        stTokenEndpoint: endpoint,
+        stTokenContentType: f.stTokenContentType,
+        stGrantType: f.stGrantType,
+        stSubscriptionKeyMode: f.stSubscriptionKeyMode,
+        stSubscriptionKeyHeader: f.stSubscriptionKeyHeader || undefined,
+        stSubscriptionKeyQueryParam: f.stSubscriptionKeyQueryParam || undefined,
+        stUsernameFieldName: f.stUsernameFieldName,
+        stPasswordFieldName: f.stPasswordFieldName,
+        stSecretKeyFieldName: f.stSecretKeyFieldName || undefined,
+        stPasswordSecretRef: undefined,
+        stInlinePassword: f.stInlinePassword,
+        stSecretKeySecretRef: undefined,
+        stInlineSecretKey: f.stInlineSecretKey || undefined,
+        stSubscriptionKeySecretRef: undefined,
+        stInlineSubscriptionKey: f.stInlineSubscriptionKey || undefined,
+        stSuccessRequiresJsonPath: f.stSuccessRequiresJsonPath || undefined,
+        stTokenJsonPath: f.stTokenJsonPath,
+        stTokenPrefix: f.stTokenPrefix,
+        stTtlSource: f.stTtlSource,
+        stExpiresInJsonPath: f.stTtlSource === 'ResponseField'
+          ? f.stExpiresInJsonPath || undefined
+          : undefined,
+        stDefaultTtlSeconds: ttlSeconds,
+        stAdditionalBodyJson: f.stAdditionalBodyJson || undefined,
+      };
+      if (p) this.saved.emit({ profile: p, patch: payload, isNew: false });
+      else this.saved.emit({
+        profile: { id: '', name, type, tenant: '', ...payload } as AuthProfile,
+        patch: {}, isNew: true,
+      });
+      return;
+    }
+
+    // ------------------------------------------------------------
     // Mutual TLS
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
     if (type === 'MutualTls') {
       const certRef = f.certRef.trim();
       const keyRef = f.keyRef.trim();
@@ -226,9 +396,9 @@ export class AuthModalComponent implements OnInit {
       return;
     }
 
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
     // SQL Server Connection String
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
     if (type === 'SqlServerConnectionString') {
       if (mode === 'KeyVault') {
         const ref = f.connectionStringSecretRef.trim();
@@ -272,9 +442,9 @@ export class AuthModalComponent implements OnInit {
       return;
     }
 
-    // -------------------------------------------------------------
-    // FTP Credentials  (username + password, Key Vault or Inline)
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
+    // FTP Credentials
+    // ------------------------------------------------------------
     if (type === 'FtpCredentials') {
       const username = f.username.trim();
       if (!username) { this.error.set('Username is required for FTP.'); return; }
@@ -318,7 +488,6 @@ export class AuthModalComponent implements OnInit {
         return;
       }
 
-      // Inline
       const inlinePassword = f.ftpInlinePassword;
       if (!inlinePassword) { this.error.set('The inline password cannot be empty.'); return; }
       const payload: Partial<AuthProfile> = {
@@ -337,9 +506,9 @@ export class AuthModalComponent implements OnInit {
       return;
     }
 
-    // -------------------------------------------------------------
-    // SFTP Key Credentials  (username + private key + optional passphrase)
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
+    // SFTP Key Credentials
+    // ------------------------------------------------------------
     if (type === 'SftpKeyCredentials') {
       const username = f.username.trim();
       if (!username) { this.error.set('Username is required for SFTP.'); return; }
@@ -390,7 +559,6 @@ export class AuthModalComponent implements OnInit {
         return;
       }
 
-      // Inline
       const inlineKey = f.sftpInlinePrivateKey.trim();
       if (!inlineKey) { this.error.set('The inline private key is required.'); return; }
       if (!inlineKey.includes('BEGIN') || !inlineKey.includes('PRIVATE KEY')) {
@@ -419,9 +587,9 @@ export class AuthModalComponent implements OnInit {
       return;
     }
 
-    // -------------------------------------------------------------
-    // Credential types — Keycloak / OAuth2 / ApiKey / WS-Security
-    // -------------------------------------------------------------
+    // ------------------------------------------------------------
+    // Keycloak / OAuth2 / ApiKey / WS-Security
+    // ------------------------------------------------------------
     const patchOrNew: Partial<AuthProfile> = {
       name, type,
       realm: f.realm.trim() || '—',

@@ -8,7 +8,11 @@
     <select (change)="onConnectionChange($any($event.target).value)">
       <option value="" [selected]="!task().connectionId">— Select —</option>
       @for (c of connectionOptions(); track c.id) {
-        <option [value]="c.id" [selected]="c.id === task().connectionId">{{ c.name }}</option>
+        <option
+  [value]="c.id"
+  [selected]="same(c.id, task().connectionId)">
+  {{ c.name }}
+</option>
       }
     </select>
   </div>
@@ -18,7 +22,7 @@
     <select (change)="onAuthChange($any($event.target).value)">
       <option value="" [selected]="!task().authId">— Connection default —</option>
       @for (a of authOptions(); track a.id) {
-        <option [value]="a.id" [selected]="a.id === task().authId">{{ a.name }}</option>
+        <option [value]="a.id" [selected]="same(a.id, task().authId)">{{ a.name }}</option>
       }
     </select>
   </div>
@@ -36,7 +40,7 @@
     <label>HTTP Method</label>
     <select (change)="onMethodChange($any($event.target).value)">
       @for (m of methods; track m) {
-        <option [value]="m" [selected]="m === (task().method || 'POST')">{{ m }}</option>
+        <option [value]="m" [selected]="same(m, task().method || 'POST')">{{ m }}</option>
       }
     </select>
   </div>

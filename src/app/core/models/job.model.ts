@@ -15,8 +15,14 @@ export interface Job {
   lastRun: string;
   next: string;
   description: string;
-  version: number;
+  version: number;              // working — highest version
+  publishedVersion?: number;    // latest published, absent if never
   publishedAt: string;
   publishedBy: string;
   pipeline: PipelineTask[];
+
+  taskCount?: number;
+  subTaskCount?: number;
+  branchCount?: number;
+  iteratorCount?: number;
 }

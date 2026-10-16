@@ -1,4 +1,4 @@
-import { Component, computed, inject, input, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { JobService } from '../../../../core/services/job.service';
 import { DragStateService } from '../../../../shared/services/drag-state.service';
@@ -31,6 +31,16 @@ export class BuilderViewComponent {
 
   readonly jobsListCollapsed = signal(false);
   readonly dragPreviewActive = this.dragState.preview;
+
+  constructor() {
+    // Whenever the selected job changes, ensure its full pipeline is loaded.
+    // The list endpoint returns summaries with pipeline:[] — the detail
+    // endpoint returns the tasks. loadFull is idempotent (see JobService).
+    effect(() => {
+      const id = this.selectedJobId();
+      if (id != null) void this.jobs.loadFull(id);
+    });
+  }
 
   toggleJobsList(): void {
     this.jobsListCollapsed.update(v => !v);
