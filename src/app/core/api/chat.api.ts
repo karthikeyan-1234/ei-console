@@ -27,7 +27,7 @@ export abstract class ChatApi {
    * assistant's reply. On the eventual .NET backend this becomes a streaming
    * call; the shape of the return value stays the same for the fake.
    */
-  abstract sendMessage(sessionId: string, content: string): Promise<SendMessageResult>;
-}
+// src/app/core/api/chat.api.ts
+abstract sendMessage(  sessionId: string,content: string,onToken: (token: string) => void): Promise<SendMessageResult>;}
 
 export const CHAT_API = new InjectionToken<ChatApi>('CHAT_API');

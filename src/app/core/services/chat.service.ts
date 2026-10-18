@@ -55,7 +55,7 @@ export class ChatService {
 
   private readonly _sessions = signal<ChatSessionSummary[]>([]);
   private readonly _activeSessionId = signal<string | null>(null);
-  private readonly _messages = signal<ChatMessage[]>([]);
+  private _messages = signal<ChatMessage[]>([]);
   private readonly _loaded = signal(false);
 
   readonly sessions = this._sessions.asReadonly();
@@ -102,78 +102,98 @@ export class ChatService {
   // Sending
   // ---------------------------------------------------------------------------
 
-  async sendMessage(content: string): Promise<void> {
-    const trimmed = content.trim();
-    if (!trimmed || this._isThinking()) return;
+async sendMessage(content: string) {
+  const trimmed = content.trim();
+  if (!trimmed) return;
 
-    // Create a session lazily on the first message.
-    let sessionId = this._activeSessionId();
-    if (!sessionId) {
-      const created = await this.api.createSession({
-        tenant: this.tenants.activeTenantId(),
-        userId: SEED_CHAT_USER_ID,
-        title: 'New chat',
-      });
-      sessionId = created.id;
-      this._activeSessionId.set(sessionId);
-      // Refresh the sessions list so the new one appears in the history panel.
-      this._sessions.set(await this.api.listSessions());
-    }
-
-    // Optimistic user bubble.
-    const optimistic: ChatMessage = {
-      id: 'optimistic-' + Math.random().toString(36).slice(2, 9),
-      sessionId,
-      role: 'user',
-      content: trimmed,
-      createdAt: new Date().toISOString(),
-      status: 'sending',
-    };
-    this._messages.update(m => [...m, optimistic]);
-    this._isThinking.set(true);
-
-    try {
-      const result = await this.api.sendMessage(sessionId, trimmed);
-      // Replace the optimistic bubble with the server's version, then append
-      // the assistant's reply.
-      this._messages.update(m =>
-        m
-          .map(msg => (msg.id === optimistic.id ? result.userMessage : msg))
-          .concat(result.assistantMessage),
-      );
-      // Refresh session list so previews and order update.
-      this._sessions.set(await this.api.listSessions());
-      if (!this._isOpen()) this._hasUnread.set(true);
-    } catch (err) {
-      this._messages.update(m =>
-        m.map(msg =>
-          msg.id === optimistic.id
-            ? { ...msg, status: 'failed' as const, error: (err as Error).message }
-            : msg,
-        ),
-      );
-    } finally {
-      this._isThinking.set(false);
-    }
+  let sessionId = this.activeSessionId();
+  
+  // If there's no active session, create one on the fly
+  if (!sessionId) {
+    const newSession = await this.api.createSession({ 
+      title: 'New Chat',
+      tenant: this.tenants.activeTenantId() || '1',
+      userId: '1' 
+    });
+    this._sessions.update(s => [newSession, ...s]);
+    sessionId = newSession.id;
+    this._activeSessionId.set(sessionId);
   }
 
+  // 1. Create optimistic placeholders
+  const optimisticUser: ChatMessage = {
+    id: 'temp-user-' + Date.now(),
+    sessionId,
+    role: 'user',
+    content: trimmed,
+    status: 'sending',
+    createdAt: new Date().toISOString()
+  };
 
-    /**
+  const optimisticAssistantId = 'temp-assistant-' + Date.now();
+  const optimisticAssistant: ChatMessage = {
+    id: optimisticAssistantId,
+    sessionId,
+    role: 'assistant',
+    content: '',
+    status: 'sending',
+    createdAt: new Date().toISOString()
+  };
+
+  // 2. Add them to the UI immediately
+  this._messages.update(msgs => [...msgs, optimisticUser, optimisticAssistant]);
+
+  try {
+    // 3. Call API and stream tokens
+    const result = await this.api.sendMessage(sessionId, trimmed, (token) => {
+      this._messages.update(msgs => msgs.map(m => 
+        m.id === optimisticAssistantId ? { ...m, content: m.content + token } : m
+      ));
+    });
+
+    // 4. Reconcile with real DB records
+    this._messages.update(msgs => 
+      msgs.map(msg => {
+        if (msg.id === optimisticUser.id) return result.userMessage || msg;
+        if (msg.id === optimisticAssistantId) return result.assistantMessage || msg;
+        return msg;
+      })
+    );
+
+        // 5. Update the session sidebar safely
+    if (result.session) {
+      this._sessions.update(sessions => 
+        sessions.map(s => s.id === sessionId ? result.session : s)
+      );
+    }
+
+  } catch (err) {
+    console.error('[ChatService] Stream failed:', err);
+    this._messages.update(msgs => msgs.map(m => 
+      m.id === optimisticAssistantId ? { ...m, status: 'failed' } : m
+    ));
+  }
+}
+
+
+  /**
    * Resends a failed message. The failed entry is removed and the same
    * content is sent again, which creates a fresh optimistic bubble and a new
    * API call. If the retry succeeds, the user sees exactly one copy of the
    * message; if it fails again, they see one failed entry with a retry link.
    */
-  async retryMessage(failedMessageId: string): Promise<void> {
-    const failed = this._messages().find(m => m.id === failedMessageId);
-    if (!failed || failed.status !== 'failed') return;
 
-    // Drop the failed entry before re-sending so we don't leave it in place
-    // while the new optimistic bubble is created.
-    this._messages.update(list => list.filter(m => m.id !== failedMessageId));
+async retryMessage(failedMessageId: string): Promise<void> {
+  const failed = this._messages().find(m => m.id === failedMessageId);
+  if (!failed || failed.status !== 'failed') return;
 
-    await this.sendMessage(failed.content);
-  }
+  // Drop the failed entry before re-sending
+  this._messages.update(list => list.filter(m => m.id !== failedMessageId));
+
+  // Now this will compile perfectly because sendMessage takes exactly 1 argument
+  await this.sendMessage(failed.content);
+}
+
 
   // ---------------------------------------------------------------------------
   // Rename / delete

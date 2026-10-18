@@ -53,4 +53,5 @@ export interface CreateSessionInput {
 export interface SendMessageResult {
   userMessage: ChatMessage;
   assistantMessage: ChatMessage;
+  session: ChatSessionSummary;
 }

@@ -4,6 +4,7 @@ import { TenantService } from '../../../../core/services/tenant.service';
 import { SignalrService } from '../../../../core/services/signalr.service';
 import { ShellLayoutService } from '../../../../shared/services/shell-layout.service';
 import { ConsoleSidebarComponent } from '../console-sidebar/console-sidebar';
+import { ChatService } from '../../../../core/services';
 
 @Component({
   selector: 'ei-console-frame',
@@ -15,9 +16,17 @@ export class ConsoleFrameComponent {
   private readonly layout = inject(ShellLayoutService);
   readonly signalr = inject(SignalrService);
 
+    // Inject ChatService
+  private readonly chat = inject(ChatService); 
+
   readonly activeTenants = this.tenants.activeTenants;
   readonly activeTenantId = this.tenants.activeTenantId;
   readonly sidebarCollapsed = this.layout.sidebarCollapsed;
+
+  ngOnInit(): void {
+    this.signalr.start();
+    this.chat.load(); // Load chat sessions when the component initializes
+  }
 
   onToggleSidebar(): void {
     this.layout.toggleSidebar();

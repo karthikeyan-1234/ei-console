@@ -192,6 +192,7 @@ export class FakeChatApi extends ChatApi {
     return {
       userMessage: JSON.parse(JSON.stringify(userMessage)),
       assistantMessage: JSON.parse(JSON.stringify(assistantMessage)),
+      session: JSON.parse(JSON.stringify(session)) // 👈 Add this line
     };
   }
 
